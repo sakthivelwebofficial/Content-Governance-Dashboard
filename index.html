@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Content Governance Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">Content Governance Dashboard</div>
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="active">Dashboard</a></li>
+        <li><a href="components.html">Components</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="navbar-right">
+        <span id="userDisplay">Welcome, User</span>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Content Governance Dashboard</h1>
+
+    <div class="controls">
+    <button onclick="addRow()">Add Row</button>
+    <button onclick="saveData()">Save (Local)</button>
+    <button onclick="exportData()">Export</button>
+  </div>
+
+  <div class="filter-section">
+    <h3>Filter by Expiry Date</h3>
+    <div class="date-range">
+      <label>From: <input type="date" id="startDate" onchange="applyFilter()"></label>
+      <label>To: <input type="date" id="endDate" onchange="applyFilter()"></label>
+      <button onclick="clearFilter()">Clear Filter</button>
+    </div>
+  </div>
+
+  <table id="grid">
+    <thead>
+      <tr>
+        <th>REC ID</th>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Team</th>
+        <th>Workfront</th>
+        <th>Expiry Date</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

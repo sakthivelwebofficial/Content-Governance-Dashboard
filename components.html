@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Components - Content Governance Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">Content Governance Dashboard</div>
+      <ul class="navbar-menu">
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="components.html" class="active">Components</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="navbar-right">
+        <span id="userDisplay">Welcome, User</span>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Components Management</h1>
+
+    <div class="add-component-section">
+      <h3>Add New Component</h3>
+      <form onsubmit="addComponent(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="compName">Component Name:</label>
+            <input type="text" id="compName" required>
+          </div>
+          <div class="form-group">
+            <label for="compType">Type:</label>
+            <input type="text" id="compType" placeholder="e.g., Card, Modal, Chart" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="compDescription">Description:</label>
+            <input type="text" id="compDescription" placeholder="Brief description">
+          </div>
+          <div class="form-group">
+            <label for="compStatus">Status:</label>
+            <select id="compStatus">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Deprecated">Deprecated</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="add-btn">Add Component</button>
+      </form>
+    </div>
+
+    <div class="components-list">
+      <h3>Components List</h3>
+      <div class="controls">
+        <button onclick="exportComponents()">Export</button>
+      </div>
+      <table id="componentsTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Created Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="components.js"></script>
+</body>
+</html>

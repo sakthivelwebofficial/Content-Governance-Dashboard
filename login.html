@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - Content Governance Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(#163944, #0e2a33);
+    }
+
+    .login-box {
+      background: #1a3d47;
+      padding: 40px;
+      border-radius: 8px;
+      border: 1px solid #2f5a68;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .login-box h2 {
+      text-align: center;
+      color: white;
+      margin-top: 0;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      color: white;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #4f6f7a;
+      border-radius: 4px;
+      background: #102b33;
+      color: white;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #1f6fd6;
+      box-shadow: 0 0 5px rgba(31, 111, 214, 0.5);
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 12px;
+      background: #1f6fd6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .login-button:hover {
+      background: #1551a8;
+    }
+
+    .error-message {
+      color: #ff6b6b;
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 14px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <h2>Content Governance Dashboard</h2>
+      <div class="error-message" id="errorMessage"></div>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" placeholder="Enter username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" placeholder="Enter password" required>
+        </div>
+        <button type="submit" class="login-button">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>

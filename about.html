@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>About - Content Governance Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">Content Governance Dashboard</div>
+      <ul class="navbar-menu">
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="components.html">Components</a></li>
+        <li><a href="about.html" class="active">About</a></li>
+      </ul>
+      <div class="navbar-right">
+        <span id="userDisplay">Welcome, User</span>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>About Content Governance Dashboard</h1>
+
+    <div class="about-section">
+      <h2>Overview</h2>
+      <p>The Content Governance Dashboard is a comprehensive tool designed to manage and track content records efficiently. It provides a user-friendly interface for organizing, filtering, and exporting content governance data.</p>
+    </div>
+
+    <div class="about-section">
+      <h2>Key Features</h2>
+      <ul class="features-list">
+        <li><strong>Dashboard:</strong> View and manage all content records with real-time editing capabilities</li>
+        <li><strong>Date Range Filtering:</strong> Filter records by expiry date range to view specific content</li>
+        <li><strong>Data Export:</strong> Export filtered or all records as CSV files for further analysis</li>
+        <li><strong>Components Management:</strong> Create and maintain a library of reusable UI components</li>
+        <li><strong>Local Storage:</strong> Secure data persistence using browser local storage</li>
+        <li><strong>User Authentication:</strong> Secure login system to protect sensitive data</li>
+      </ul>
+    </div>
+
+    <div class="about-section">
+      <h2>How to Use</h2>
+      <div class="instructions">
+        <h3>Dashboard</h3>
+        <ul>
+          <li>Add new records by clicking "Add Row"</li>
+          <li>Edit records directly in the table cells</li>
+          <li>Filter by date range to find specific records</li>
+          <li>Save data locally using "Save (Local)" button</li>
+          <li>Export filtered records as CSV</li>
+        </ul>
+
+        <h3>Components</h3>
+        <ul>
+          <li>Add new components using the form at the top</li>
+          <li>View all components in the list below</li>
+          <li>Delete components no longer in use</li>
+          <li>Export components list as CSV</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <h2>Default Credentials</h2>
+      <p><strong>Username:</strong> Admin</p>
+      <p><strong>Password:</strong> admin</p>
+    </div>
+
+    <div class="about-section">
+      <h2>Data Storage</h2>
+      <p>All data is stored in your browser's local storage. This means your data persists across browser sessions but is unique to this browser and device. Be cautious when clearing browser data, as it will remove all stored information.</p>
+    </div>
+
+    <div class="about-section">
+      <h2>Version</h2>
+      <p><strong>Version:</strong> 1.0</p>
+      <p><strong>Last Updated:</strong> April 2026</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
