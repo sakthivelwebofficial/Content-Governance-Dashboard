@@ -1,8 +1,59 @@
 
 const dummyData = [
   {rec:'REC-1001', title:'Homepage Explainer', type:'Explainer Page', team:'Growth', wf:'WF-34021', expiry:'2026-06-30'},
-  {rec:'REC-1002', title:'Feature Promo Card', type:'Feature Card', team:'Offers', wf:'WF-34022', expiry:'2026-05-15'}
+  {rec:'REC-1002', title:'Feature Promo Card', type:'Feature Card', team:'Offers', wf:'WF-34022', expiry:'2026-05-15'},
+  {rec:'REC-1003', title:'Product Launch Guide', type:'Guide', team:'Product', wf:'WF-34023', expiry:'2026-07-20'},
+  {rec:'REC-1004', title:'Email Campaign Template', type:'Email Template', team:'Marketing', wf:'WF-34024', expiry:'2026-04-30'},
+  {rec:'REC-1005', title:'Video Tutorial Series', type:'Video', team:'Training', wf:'WF-34025', expiry:'2026-08-15'},
+  {rec:'REC-1006', title:'FAQ Documentation', type:'Documentation', team:'Support', wf:'WF-34026', expiry:'2026-05-31'},
+  {rec:'REC-1007', title:'Social Media Post', type:'Social Content', team:'Marketing', wf:'WF-34027', expiry:'2026-06-10'},
+  {rec:'REC-1008', title:'API Documentation', type:'Documentation', team:'Engineering', wf:'WF-34028', expiry:'2026-09-30'},
+  {rec:'REC-1009', title:'Mobile App Onboarding', type:'Feature Card', team:'Product', wf:'WF-34029', expiry:'2026-07-05'},
+  {rec:'REC-1010', title:'Customer Success Story', type:'Case Study', team:'Sales', wf:'WF-34030', expiry:'2026-06-15'},
+  {rec:'REC-1011', title:'Blog Post: Best Practices', type:'Blog', team:'Content', wf:'WF-34031', expiry:'2026-05-20'},
+  {rec:'REC-1012', title:'Webinar Recording', type:'Video', team:'Training', wf:'WF-34032', expiry:'2026-08-30'},
+  {rec:'REC-1013', title:'Newsletter Template', type:'Email Template', team:'Marketing', wf:'WF-34033', expiry:'2026-04-25'},
+  {rec:'REC-1014', title:'Product Roadmap', type:'Guide', team:'Product', wf:'WF-34034', expiry:'2026-10-15'},
+  {rec:'REC-1015', title:'Training Course Module', type:'Training', team:'HR', wf:'WF-34035', expiry:'2026-07-31'},
+  {rec:'REC-1016', title:'Compliance Checklist', type:'Checklist', team:'Legal', wf:'WF-34036', expiry:'2026-06-01'},
+  {rec:'REC-1017', title:'System Architecture', type:'Documentation', team:'Engineering', wf:'WF-34037', expiry:'2026-09-15'},
+  {rec:'REC-1018', title:'User Research Report', type:'Report', team:'UX', wf:'WF-34038', expiry:'2026-05-10'},
+  {rec:'REC-1019', title:'Brand Guidelines', type:'Guide', team:'Design', wf:'WF-34039', expiry:'2026-12-31'},
+  {rec:'REC-1020', title:'Promotional Flyer', type:'Marketing Material', team:'Marketing', wf:'WF-34040', expiry:'2026-04-15'},
+  {rec:'REC-1021', title:'Service Level Agreement', type:'Legal Document', team:'Legal', wf:'WF-34041', expiry:'2026-08-20'},
+  {rec:'REC-1022', title:'Interview Guide', type:'Guide', team:'HR', wf:'WF-34042', expiry:'2026-06-25'},
+  {rec:'REC-1023', title:'Performance Dashboard', type:'Report', team:'Analytics', wf:'WF-34043', expiry:'2026-07-10'},
+  {rec:'REC-1024', title:'Deployment Manual', type:'Documentation', team:'Engineering', wf:'WF-34044', expiry:'2026-09-01'},
+  {rec:'REC-1025', title:'Customer Feedback Summary', type:'Report', team:'Support', wf:'WF-34045', expiry:'2026-05-05'},
+  {rec:'REC-1026', title:'Pricing Strategy Document', type:'Guide', team:'Finance', wf:'WF-34046', expiry:'2026-04-30'},
+  {rec:'REC-1027', title:'Social Media Strategy', type:'Strategy', team:'Marketing', wf:'WF-34047', expiry:'2026-06-30'},
+  {rec:'REC-1028', title:'Security Policy', type:'Policy', team:'IT', wf:'WF-34048', expiry:'2026-11-30'},
+  {rec:'REC-1029', title:'Quarterly Business Review', type:'Report', team:'Executive', wf:'WF-34049', expiry:'2026-05-15'},
+  {rec:'REC-1030', title:'Content Calendar', type:'Calendar', team:'Content', wf:'WF-34050', expiry:'2026-07-15'},
+  {rec:'REC-1031', title:'Employee Handbook', type:'Documentation', team:'HR', wf:'WF-34051', expiry:'2026-08-01'},
+  {rec:'REC-1032', title:'Market Analysis Report', type:'Report', team:'Strategy', wf:'WF-34052', expiry:'2026-05-20'},
+  {rec:'REC-1033', title:'Design Mockups', type:'Design Asset', team:'Design', wf:'WF-34053', expiry:'2026-06-05'},
+  {rec:'REC-1034', title:'Test Plan Document', type:'Documentation', team:'QA', wf:'WF-34054', expiry:'2026-04-20'},
+  {rec:'REC-1035', title:'Vendor Agreement', type:'Legal Document', team:'Procurement', wf:'WF-34055', expiry:'2026-09-30'},
+  {rec:'REC-1036', title:'Crisis Management Plan', type:'Plan', team:'Operations', wf:'WF-34056', expiry:'2026-07-01'},
+  {rec:'REC-1037', title:'Training Presentation', type:'Presentation', team:'Training', wf:'WF-34057', expiry:'2026-06-20'},
+  {rec:'REC-1038', title:'Analytics Dashboard Guide', type:'Guide', team:'Analytics', wf:'WF-34058', expiry:'2026-05-25'},
+  {rec:'REC-1039', title:'Partnership Proposal', type:'Proposal', team:'Business Dev', wf:'WF-34059', expiry:'2026-04-10'},
+  {rec:'REC-1040', title:'Environmental Policy', type:'Policy', team:'Corporate', wf:'WF-34060', expiry:'2026-12-31'},
+  {rec:'REC-1041', title:'Customer Onboarding', type:'Process', team:'Support', wf:'WF-34061', expiry:'2026-06-10'},
+  {rec:'REC-1042', title:'Release Notes', type:'Documentation', team:'Engineering', wf:'WF-34062', expiry:'2026-08-15'},
+  {rec:'REC-1043', title:'Brand Story', type:'Content', team:'Marketing', wf:'WF-34063', expiry:'2026-05-30'},
+  {rec:'REC-1044', title:'IT Infrastructure Plan', type:'Plan', team:'IT', wf:'WF-34064', expiry:'2026-10-31'},
+  {rec:'REC-1045', title:'Customer Satisfaction Survey', type:'Survey', team:'Operations', wf:'WF-34065', expiry:'2026-07-20'},
+  {rec:'REC-1046', title:'Product Requirements', type:'Documentation', team:'Product', wf:'WF-34066', expiry:'2026-06-30'},
+  {rec:'REC-1047', title:'Financial Forecast', type:'Report', team:'Finance', wf:'WF-34067', expiry:'2026-05-15'},
+  {rec:'REC-1048', title:'Communication Strategy', type:'Strategy', team:'Communications', wf:'WF-34068', expiry:'2026-07-30'},
+  {rec:'REC-1049', title:'UX Design Specifications', type:'Design Asset', team:'UX', wf:'WF-34069', expiry:'2026-06-15'},
+  {rec:'REC-1050', title:'Annual Compliance Report', type:'Report', team:'Legal', wf:'WF-34070', expiry:'2026-04-30'}
 ];
+
+// Global variable
+let tbody;
 
 // Check login status
 window.addEventListener('load', () => {
@@ -19,16 +70,16 @@ window.addEventListener('load', () => {
     userDisplay.textContent = `Welcome, ${username}`;
   }
   
+  // Initialize tbody and load data
+  tbody = document.querySelector('#grid tbody');
+  dummyData.forEach(addRowWithData);
+  
   // Initialize charts
   initializeCharts();
 });
 
-const tbody = document.querySelector('#grid tbody');
-
-dummyData.forEach(addRowWithData);
-
 function addRow() {
-  addRowWithData({rec:'', title:'', type:'', team:'', wf:'', expiry:''});
+  addRowWithData({rec:'', title:'', type:'', team:'', placement:'', membership:'', wf:'', expiry:''});
 }
 
 // Chart instances
@@ -47,6 +98,8 @@ function addRowWithData(d) {
     <td contenteditable="true">${d.title}</td>
     <td contenteditable="true">${d.type}</td>
     <td contenteditable="true">${d.team}</td>
+    <td contenteditable="true">${d.placement}</td>
+    <td contenteditable="true">${d.membership}</td>
     <td contenteditable="true">${d.wf}</td>
     <td contenteditable="true">${d.expiry}</td>
     <td><button onclick="deleteRow(this)">X</button></td>
@@ -69,8 +122,10 @@ function saveData() {
       title: c[1].innerText,
       type: c[2].innerText,
       team: c[3].innerText,
-      workfront: c[4].innerText,
-      expiry: c[5].innerText
+      placement: c[4].innerText,
+      membership: c[5].innerText,
+      workfront: c[6].innerText,
+      expiry: c[7].innerText
     };
   });
   localStorage.setItem('contentData', JSON.stringify(result, null, 2));
@@ -81,12 +136,12 @@ function exportData() {
   const rows = [...tbody.querySelectorAll('tr')];
   const csvData = rows.map(r => {
     const c = r.querySelectorAll('td');
-    const values = [c[0].innerText, c[1].innerText, c[2].innerText, c[3].innerText, c[4].innerText, c[5].innerText];
+    const values = [c[0].innerText, c[1].innerText, c[2].innerText, c[3].innerText, c[4].innerText, c[5].innerText, c[6].innerText, c[7].innerText];
     return values.map(v => `"${v.replace(/"/g, '""')}"`).join(',');
   });
   
   // Add header row
-  const header = '"REC ID","Title","Type","Team","Workfront","Expiry Date"';
+  const header = '"REC ID","Title","Type","Team","Placement","Membership","Workfront","Expiry Date"';
   const csv = header + '\n' + csvData.join('\n');
   
   // Create blob and download
