@@ -4,6 +4,7 @@
 <head>
   <title>Content Governance Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <nav class="navbar">
@@ -39,20 +40,55 @@
     </div>
   </div>
 
-  <table id="grid">
-    <thead>
-      <tr>
-        <th>REC ID</th>
-        <th>Title</th>
-        <th>Type</th>
-        <th>Team</th>
-        <th>Workfront</th>
-        <th>Expiry Date</th>
-        <th>Delete</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="charts-section">
+    <h3>Data Visualization</h3>
+    <div class="charts-container">
+      <div class="chart-box">
+        <h4>Monthly Distribution</h4>
+        <canvas id="monthlyChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h4>Team Distribution</h4>
+        <canvas id="teamChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h4>Record Type Distribution</h4>
+        <canvas id="typeChart"></canvas>
+      </div>
+    </div>
+    <div class="stats-summary">
+      <div class="stat-item">
+        <span class="stat-label">Total Records:</span>
+        <span class="stat-value" id="totalRecords">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Expiring This Month:</span>
+        <span class="stat-value" id="expiringThisMonth">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Total Teams:</span>
+        <span class="stat-value" id="totalTeams">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-section">
+    <h3>Content Records</h3>
+    <table id="grid">
+      <thead>
+        <tr>
+          <th>REC ID</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Team</th>
+          <th>Workfront</th>
+          <th>Expiry Date</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
   </div>
 
   <script src="app.js"></script>

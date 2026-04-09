@@ -18,6 +18,9 @@ window.addEventListener('load', () => {
   if (userDisplay) {
     userDisplay.textContent = `Welcome, ${username}`;
   }
+  
+  // Initialize charts
+  initializeCharts();
 });
 
 const tbody = document.querySelector('#grid tbody');
@@ -26,6 +29,15 @@ dummyData.forEach(addRowWithData);
 
 function addRow() {
   addRowWithData({rec:'', title:'', type:'', team:'', wf:'', expiry:''});
+}
+
+// Chart instances
+let monthlyChartInstance = null;
+let teamChartInstance = null;
+let typeChartInstance = null;
+
+function initializeCharts() {
+  updateCharts();
 }
 
 function addRowWithData(d) {
@@ -37,9 +49,15 @@ function addRowWithData(d) {
     <td contenteditable="true">${d.team}</td>
     <td contenteditable="true">${d.wf}</td>
     <td contenteditable="true">${d.expiry}</td>
-    <td><button onclick="this.parentElement.parentElement.remove()">X</button></td>
+    <td><button onclick="deleteRow(this)">X</button></td>
   `;
   tbody.appendChild(row);
+  updateCharts();
+}
+
+function deleteRow(btn) {
+  btn.parentElement.parentElement.remove();
+  updateCharts();
 }
 
 function saveData() {
@@ -107,6 +125,8 @@ function applyFilter() {
     
     row.classList.toggle('hidden', !isInRange);
   });
+  
+  updateCharts();
 }
 
 function clearFilter() {
@@ -115,6 +135,193 @@ function clearFilter() {
   const rows = [...tbody.querySelectorAll('tr')];
   rows.forEach(row => {
     row.classList.remove('hidden');
+  });
+  updateCharts();
+}
+
+function updateCharts() {
+  const rows = [...tbody.querySelectorAll('tr:not(.hidden)')];
+  
+  // Extract data
+  const monthlyData = {};
+  const teamData = {};
+  const typeData = {};
+  
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length >= 6) {
+      const expiry = cells[5].innerText;
+      const team = cells[3].innerText;
+      const type = cells[2].innerText;
+      
+      if (expiry) {
+        const month = expiry.substring(0, 7); // YYYY-MM format
+        monthlyData[month] = (monthlyData[month] || 0) + 1;
+      }
+      
+      if (team) {
+        teamData[team] = (teamData[team] || 0) + 1;
+      }
+      
+      if (type) {
+        typeData[type] = (typeData[type] || 0) + 1;
+      }
+    }
+  });
+  
+  // Update stats
+  updateStats(rows, monthlyData);
+  
+  // Create charts
+  createMonthlyChart(monthlyData);
+  createTeamChart(teamData);
+  createTypeChart(typeData);
+}
+
+function updateStats(rows, monthlyData) {
+  const totalRecords = rows.length;
+  const currentMonth = new Date().toISOString().substring(0, 7);
+  const expiringThisMonth = monthlyData[currentMonth] || 0;
+  
+  const teams = new Set();
+  rows.forEach(row => {
+    const team = row.querySelectorAll('td')[3].innerText;
+    if (team) teams.add(team);
+  });
+  
+  document.getElementById('totalRecords').textContent = totalRecords;
+  document.getElementById('expiringThisMonth').textContent = expiringThisMonth;
+  document.getElementById('totalTeams').textContent = teams.size;
+}
+
+function createMonthlyChart(data) {
+  const ctx = document.getElementById('monthlyChart');
+  if (!ctx) return;
+  
+  const months = Object.keys(data).sort();
+  const values = months.map(m => data[m]);
+  
+  if (monthlyChartInstance) {
+    monthlyChartInstance.destroy();
+  }
+  
+  monthlyChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Records',
+        data: values,
+        backgroundColor: '#1f6fd6',
+        borderColor: '#1551a8',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { color: '#a0c9ff' }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { color: '#a0c9ff' },
+          grid: { color: '#2f5a68' }
+        },
+        x: {
+          ticks: { color: '#a0c9ff' },
+          grid: { color: '#2f5a68' }
+        }
+      }
+    }
+  });
+}
+
+function createTeamChart(data) {
+  const ctx = document.getElementById('teamChart');
+  if (!ctx) return;
+  
+  const teams = Object.keys(data);
+  const values = teams.map(t => data[t]);
+  
+  const colors = ['#1f6fd6', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#e83e8c'];
+  
+  if (teamChartInstance) {
+    teamChartInstance.destroy();
+  }
+  
+  teamChartInstance = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: teams,
+      datasets: [{
+        data: values,
+        backgroundColor: colors.slice(0, teams.length),
+        borderColor: '#0a1f28',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { color: '#a0c9ff' },
+          position: 'bottom'
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.label + ': ' + context.parsed + ' records';
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function createTypeChart(data) {
+  const ctx = document.getElementById('typeChart');
+  if (!ctx) return;
+  
+  const types = Object.keys(data);
+  const values = types.map(t => data[t]);
+  
+  const colors = ['#1f6fd6', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#e83e8c'];
+  
+  if (typeChartInstance) {
+    typeChartInstance.destroy();
+  }
+  
+  typeChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: types,
+      datasets: [{
+        data: values,
+        backgroundColor: colors.slice(0, types.length),
+        borderColor: '#0a1f28',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { color: '#a0c9ff' },
+          position: 'bottom'
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.label + ': ' + context.parsed + ' records';
+            }
+          }
+        }
+      }
+    }
   });
 }
 
