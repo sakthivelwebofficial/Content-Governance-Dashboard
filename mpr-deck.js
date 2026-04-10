@@ -107,11 +107,13 @@ function parseCSV(lines) {
   // Required column indices
   const keyIndex = headers.findIndex(h => h.includes('issue') || h === 'key');
   const summaryIndex = headers.findIndex(h => h.includes('summary'));
-  const statusIndex = headers.findIndex(h => h.includes('status'));
-  const priorityIndex = headers.findIndex(h => h.includes('priority'));
+  const statusIndex = headers.findIndex(h => h.includes('status') && !h.includes('sub-status'));
+  const priorityIndex = headers.findIndex(h => h.includes('priority') && !h.includes('rating') && !h.includes('business') && !h.includes('rank'));
   const assigneeIndex = headers.findIndex(h => h.includes('assignee'));
-  const createdIndex = headers.findIndex(h => h.includes('created'));
-  const updatedIndex = headers.findIndex(h => h.includes('updated'));
+  const createdIndex = headers.findIndex(h => h.includes('created') && !h.includes('creator'));
+  const updatedIndex = headers.findIndex(h => h.includes('updated') && !h.includes('by'));
+  const issueTypeIndex = headers.findIndex(h => h.includes('issue type'));
+  const projectIndex = headers.findIndex(h => h.includes('project name') && !h.includes('url'));
 
   const data = [];
   
@@ -130,7 +132,9 @@ function parseCSV(lines) {
         priority: priorityIndex >= 0 ? values[priorityIndex] : '',
         assignee: assigneeIndex >= 0 ? values[assigneeIndex] : '',
         created: createdIndex >= 0 ? values[createdIndex] : '',
-        updated: updatedIndex >= 0 ? values[updatedIndex] : ''
+        updated: updatedIndex >= 0 ? values[updatedIndex] : '',
+        issueType: issueTypeIndex >= 0 ? values[issueTypeIndex] : '',
+        project: projectIndex >= 0 ? values[projectIndex] : ''
       });
     }
   }
@@ -296,19 +300,19 @@ function updateCharts() {
 
   // Group data for charts - using filtered data
   const statusCounts = {};
-  const priorityCounts = {};
+  const issueTypeCounts = {};
   const assigneeCounts = {};
 
   filteredJiraData.forEach(issue => {
     statusCounts[issue.status] = (statusCounts[issue.status] || 0) + 1;
-    priorityCounts[issue.priority] = (priorityCounts[issue.priority] || 0) + 1;
+    issueTypeCounts[issue.issueType] = (issueTypeCounts[issue.issueType] || 0) + 1;
     assigneeCounts[issue.assignee] = (assigneeCounts[issue.assignee] || 0) + 1;
   });
 
   // Create/Update Charts
   createCompletedByTypeChart(assigneeCounts);
   createIntakesCompletedChart(statusCounts);
-  createRequestsPerSquadChart(priorityCounts);
+  createRequestsPerSquadChart(issueTypeCounts);
 }
 
 function createCompletedByTypeChart(data) {
