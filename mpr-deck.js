@@ -385,8 +385,8 @@ function createCompletedByTypeChart(data) {
         legend: {
           position: 'bottom',
           labels: {
-            color: '#a0c9ff',
-            font: { size: 12 },
+            color: '#ffffff',
+            font: { size: 12, weight: 'bold' },
             padding: 15,
             generateLabels: (chart) => {
               const data = chart.data;
@@ -536,8 +536,8 @@ function createRequestsPerSquadChart(issueTypeData) {
         legend: {
           position: 'bottom',
           labels: {
-            color: '#a0c9ff',
-            font: { size: 12 },
+            color: '#ffffff',
+            font: { size: 12, weight: 'bold' },
             padding: 15,
             generateLabels: (chart) => {
               const data = chart.data;
