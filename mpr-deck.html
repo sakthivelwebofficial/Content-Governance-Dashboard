@@ -24,7 +24,6 @@
   <div class="container">
     <h1>MPR Deck Data</h1>
 
-    <!-- Statistics Section -->
     <div class="stats-container">
       <div class="stat-card">
         <div class="stat-label">Last 30 Days</div>
@@ -36,6 +35,19 @@
         <div class="stat-value" id="statYTD">0</div>
         <div class="stat-sublabel">Intakes Received</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-label">Current Month</div>
+        <div class="stat-value" id="statCurrentMonth">0</div>
+        <div class="stat-sublabel">Issues in View</div>
+      </div>
+    </div>
+
+    <!-- Month Filter -->
+    <div class="month-filter">
+      <label for="monthSelect">View Month:</label>
+      <select id="monthSelect" onchange="changeMonth()">
+        <!-- Options will be populated by JavaScript -->
+      </select>
     </div>
 
     <!-- Charts Section -->

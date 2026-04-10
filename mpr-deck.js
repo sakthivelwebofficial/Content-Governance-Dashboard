@@ -1,9 +1,12 @@
 // Global variables
 let jiraData = [];
+let filteredJiraData = [];
 let chartsInitialized = false;
 let completedByTypeChart = null;
 let intakesCompletedChart = null;
 let requestsPerSquadChart = null;
+let currentMonth = null;
+let currentYear = null;
 
 // Check login status
 window.addEventListener('load', () => {
@@ -20,8 +23,25 @@ window.addEventListener('load', () => {
     userDisplay.textContent = `Welcome, ${username}`;
   }
 
-  // Load saved Jira data if exists
-  loadSavedJiraData();
+  // Initialize month to current
+  const now = new Date();
+  currentMonth = now.getMonth();
+  currentYear = now.getFullYear();
+
+  // Load saved Jira data if exists, otherwise load default
+  const saved = localStorage.getItem('jiraData');
+  if (saved) {
+    jiraData = JSON.parse(saved);
+  } else {
+    // Pre-load with demo data - will be replaced when CSV is uploaded
+    jiraData = [];
+  }
+
+  // Populate month selector
+  populateMonthSelector();
+
+  // Apply filters and update display
+  applyMonthFilter();
   updateStatistics();
 });
 
@@ -60,14 +80,12 @@ function handleCSVUpload(event) {
       // Save to localStorage
       localStorage.setItem('jiraData', JSON.stringify(jiraData));
 
-      // Update display
-      displayJiraTable();
-      updateCharts();
-      updateStatistics();
+      // Re-apply filters with new data
+      applyMonthFilter();
       
       // Success message
       errorDiv.style.display = 'block';
-      errorDiv.textContent = `Successfully loaded ${jiraData.length} Jira issues`;
+      errorDiv.textContent = `Successfully loaded ${jiraData.length} Jira issues. Showing ${filteredJiraData.length} issues for current view.`;
       errorDiv.style.color = '#51cf66';
       
       setTimeout(() => {
@@ -142,39 +160,85 @@ function parseCSVLine(line) {
   return result;
 }
 
-function loadSavedJiraData() {
-  const saved = localStorage.getItem('jiraData');
-  if (saved) {
-    jiraData = JSON.parse(saved);
-    displayJiraTable();
-    updateCharts();
+function populateMonthSelector() {
+  const selector = document.getElementById('monthSelect');
+  selector.innerHTML = '';
+
+  const now = new Date();
+  
+  // Add last 6 months
+  for (let i = 0; i < 6; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthStr = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    
+    const option = document.createElement('option');
+    option.value = `${date.getMonth()}-${date.getFullYear()}`;
+    option.textContent = monthStr;
+    
+    if (i === 0) {
+      option.selected = true;
+    }
+    
+    selector.appendChild(option);
   }
 }
 
-function displayJiraTable() {
-  const tbody = document.querySelector('#jiraTable tbody');
-  tbody.innerHTML = '';
+function changeMonth() {
+  const selector = document.getElementById('monthSelect');
+  const [month, year] = selector.value.split('-').map(Number);
+  currentMonth = month;
+  currentYear = year;
+  applyMonthFilter();
+}
 
-  if (jiraData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No Jira data loaded. Upload a CSV file to get started.</td></tr>';
-    return;
+function getMonthData(month, year) {
+  // Get all data for current month
+  const startDate = new Date(year, month, 1);
+  const endDate = new Date(year, month + 1, 0, 23, 59, 59);
+
+  return jiraData.filter(issue => {
+    const createdDate = new Date(issue.created);
+    return createdDate >= startDate && createdDate <= endDate;
+  });
+}
+
+function getPreviousMonthData(month, year) {
+  // Get last few entries from previous month
+  let prevMonth = month - 1;
+  let prevYear = year;
+
+  if (prevMonth < 0) {
+    prevMonth = 11;
+    prevYear--;
   }
 
-  jiraData.forEach(issue => {
-    const row = document.createElement('tr');
-    const statusClass = `status-${issue.status.toLowerCase().replace(/\s+/g, '-')}`;
-    
-    row.innerHTML = `
-      <td><strong>${issue.key}</strong></td>
-      <td>${issue.summary}</td>
-      <td><span class="status-badge ${statusClass}">${issue.status}</span></td>
-      <td>${issue.priority}</td>
-      <td>${issue.assignee}</td>
-      <td>${issue.created}</td>
-      <td>${issue.updated}</td>
-    `;
-    tbody.appendChild(row);
+  const startDate = new Date(prevYear, prevMonth, 1);
+  const endDate = new Date(prevYear, prevMonth + 1, 0, 23, 59, 59);
+
+  const prevMonthData = jiraData.filter(issue => {
+    const createdDate = new Date(issue.created);
+    return createdDate >= startDate && createdDate <= endDate;
   });
+
+  // Return only last 5 entries from previous month
+  return prevMonthData.slice(-5);
+}
+
+function applyMonthFilter() {
+  const currentMonthData = getMonthData(currentMonth, currentYear);
+  const lastMonthData = getPreviousMonthData(currentMonth, currentYear);
+
+  // Combine: last month data + current month data
+  filteredJiraData = [...lastMonthData, ...currentMonthData];
+
+  // Remove duplicates if any
+  filteredJiraData = Array.from(
+    new Map(filteredJiraData.map(item => [item.key, item])).values()
+  );
+
+  displayJiraTable();
+  updateCharts();
+  updateStatistics();
 }
 
 function filterJiraTable() {
@@ -187,15 +251,55 @@ function filterJiraTable() {
   });
 }
 
-function updateCharts() {
-  if (jiraData.length === 0) return;
+function displayJiraTable() {
+  const tbody = document.querySelector('#jiraTable tbody');
+  tbody.innerHTML = '';
 
-  // Group data for charts
+  if (filteredJiraData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No Jira data for selected month. Upload a CSV file to get started.</td></tr>';
+    return;
+  }
+
+  // Sort by created date descending
+  const sorted = [...filteredJiraData].sort((a, b) => {
+    return new Date(b.created) - new Date(a.created);
+  });
+
+  sorted.forEach(issue => {
+    const row = document.createElement('tr');
+    const statusClass = `status-${issue.status.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    row.innerHTML = `
+      <td><strong>${issue.key}</strong></td>
+      <td>${issue.summary}</td>
+      <td><span class="status-badge ${statusClass}">${issue.status}</span></td>
+      <td>${issue.priority}</td>
+      <td>${issue.assignee}</td>
+      <td>${formatDate(issue.created)}</td>
+      <td>${formatDate(issue.updated)}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function formatDate(dateStr) {
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch {
+    return dateStr;
+  }
+}
+
+function updateCharts() {
+  if (filteredJiraData.length === 0) return;
+
+  // Group data for charts - using filtered data
   const statusCounts = {};
   const priorityCounts = {};
   const assigneeCounts = {};
 
-  jiraData.forEach(issue => {
+  filteredJiraData.forEach(issue => {
     statusCounts[issue.status] = (statusCounts[issue.status] || 0) + 1;
     priorityCounts[issue.priority] = (priorityCounts[issue.priority] || 0) + 1;
     assigneeCounts[issue.assignee] = (assigneeCounts[issue.assignee] || 0) + 1;
@@ -212,6 +316,10 @@ function createCompletedByTypeChart(data) {
   
   if (completedByTypeChart) {
     completedByTypeChart.destroy();
+  }
+
+  if (Object.keys(data).length === 0) {
+    return;
   }
 
   const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40', '#ff6384', '#c9cbcf'];
@@ -343,15 +451,16 @@ function updateStatistics() {
 
   document.getElementById('statLast30').textContent = count30;
   document.getElementById('statYTD').textContent = countYTD;
+  document.getElementById('statCurrentMonth').textContent = filteredJiraData.length;
 }
 
 function exportJiraData() {
-  if (jiraData.length === 0) {
+  if (filteredJiraData.length === 0) {
     alert('No data to export!');
     return;
   }
 
-  const csvData = jiraData.map(issue => {
+  const csvData = filteredJiraData.map(issue => {
     const values = [issue.key, issue.summary, issue.status, issue.priority, issue.assignee, issue.created, issue.updated];
     return values.map(v => `"${(v || '').replace(/"/g, '""')}"`).join(',');
   });

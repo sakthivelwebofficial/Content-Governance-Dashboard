@@ -461,6 +461,39 @@ tr.hidden {
   flex-wrap: wrap;
 }
 
+.month-filter {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  padding: 15px;
+  background: #1a3d47;
+  border-radius: 5px;
+  border: 1px solid #2f5a68;
+}
+
+.month-filter label {
+  color: #a0c9ff;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+#monthSelect {
+  padding: 8px 15px;
+  background: #102b33;
+  border: 1px solid #4f6f7a;
+  border-radius: 3px;
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#monthSelect:focus {
+  outline: none;
+  border-color: #1f6fd6;
+  box-shadow: 0 0 5px rgba(31, 111, 214, 0.3);
+}
+
 .stat-card {
   flex: 1;
   min-width: 150px;
