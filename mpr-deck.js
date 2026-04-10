@@ -381,6 +381,12 @@ function createIntakesCompletedChart(statusData) {
       plugins: {
         legend: {
           labels: { color: '#a0c9ff' }
+        },
+        datalabels: {
+          color: '#ffffff',
+          font: { weight: 'bold', size: 14 },
+          anchor: 'end',
+          align: 'end'
         }
       },
       scales: {
@@ -393,7 +399,28 @@ function createIntakesCompletedChart(statusData) {
           grid: { color: '#2f5a68' }
         }
       }
-    }
+    },
+    plugins: [{
+      id: 'datalabels',
+      afterDatasetsDraw: function(chart) {
+        const ctx = chart.ctx;
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          meta.data.forEach((bar, index) => {
+            const data = dataset.data[index];
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            
+            const x = bar.x + 10;
+            const y = bar.y;
+            
+            ctx.fillText(data, x, y);
+          });
+        });
+      }
+    }]
   });
 }
 
