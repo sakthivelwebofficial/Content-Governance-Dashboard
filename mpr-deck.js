@@ -351,7 +351,31 @@ function createCompletedByTypeChart(data) {
           }
         }
       }
-    }
+    },
+    plugins: [{
+      id: 'textCenter',
+      afterDatasetsDraw(chart) {
+        const { ctx, chartArea: { left, top, width, height } } = chart;
+        ctx.save();
+
+        chart.data.datasets.forEach((datasheet, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          meta.data.forEach((bar, index) => {
+            const data = datasheet.data[index];
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const { x, y } = bar.getProps(['x', 'y'], true);
+            ctx.fillText(data, x, y);
+          });
+        });
+
+        ctx.restore();
+      }
+    }]
   });
 }
 
@@ -456,7 +480,31 @@ function createRequestsPerSquadChart(priorityData) {
           }
         }
       }
-    }
+    },
+    plugins: [{
+      id: 'textCenter',
+      afterDatasetsDraw(chart) {
+        const { ctx, chartArea: { left, top, width, height } } = chart;
+        ctx.save();
+
+        chart.data.datasets.forEach((datasheet, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          meta.data.forEach((bar, index) => {
+            const data = datasheet.data[index];
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const { x, y } = bar.getProps(['x', 'y'], true);
+            ctx.fillText(data, x, y);
+          });
+        });
+
+        ctx.restore();
+      }
+    }]
   });
 }
 
