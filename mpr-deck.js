@@ -410,6 +410,9 @@ function createCompletedByTypeChart(data) {
         ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
         
         datasets.forEach((dataset) => {
           const meta = chart.getDatasetMeta(0);
@@ -417,6 +420,9 @@ function createCompletedByTypeChart(data) {
             const value = dataset.data[index];
             const { x, y } = datapoint;
             
+            // Draw stroke first for outline
+            ctx.strokeText(value, x, y);
+            // Then draw filled text in white
             ctx.fillStyle = '#ffffff';
             ctx.fillText(value, x, y);
           });
@@ -555,6 +561,9 @@ function createRequestsPerSquadChart(issueTypeData) {
         ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
         
         datasets.forEach((dataset) => {
           const meta = chart.getDatasetMeta(0);
@@ -562,6 +571,9 @@ function createRequestsPerSquadChart(issueTypeData) {
             const value = dataset.data[index];
             const { x, y } = datapoint;
             
+            // Draw stroke first for outline
+            ctx.strokeText(value, x, y);
+            // Then draw filled text in white
             ctx.fillStyle = '#ffffff';
             ctx.fillText(value, x, y);
           });
