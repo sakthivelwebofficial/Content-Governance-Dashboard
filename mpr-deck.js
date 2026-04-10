@@ -101,19 +101,49 @@ function handleCSVUpload(event) {
 }
 
 function parseCSV(lines) {
-  // Parse header
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  // Parse header with proper quoted field handling
+  const headerLine = lines[0];
+  const headers = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < headerLine.length; i++) {
+    const char = headerLine[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      headers.push(current.trim().toLowerCase().replace(/^\"|\"$/g, ''));
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  headers.push(current.trim().toLowerCase().replace(/^\"|\"$/g, ''));
+  
+  // Find column indices - look for exact match first
+  const findIndex = (searchTerms) => {
+    for (const term of searchTerms) {
+      const idx = headers.findIndex(h => h === term);
+      if (idx >= 0) return idx;
+    }
+    // Then look for partial match
+    for (const term of searchTerms) {
+      const idx = headers.findIndex(h => h.includes(term));
+      if (idx >= 0) return idx;
+    }
+    return -1;
+  };
   
   // Required column indices
-  const keyIndex = headers.findIndex(h => h.includes('issue') || h === 'key');
-  const summaryIndex = headers.findIndex(h => h.includes('summary'));
-  const statusIndex = headers.findIndex(h => h.includes('status') && !h.includes('sub-status'));
-  const priorityIndex = headers.findIndex(h => h.includes('priority') && !h.includes('rating') && !h.includes('business') && !h.includes('rank'));
-  const assigneeIndex = headers.findIndex(h => h.includes('assignee'));
-  const createdIndex = headers.findIndex(h => h.includes('created') && !h.includes('creator'));
-  const updatedIndex = headers.findIndex(h => h.includes('updated') && !h.includes('by'));
-  const issueTypeIndex = headers.findIndex(h => h.includes('issue type'));
-  const projectIndex = headers.findIndex(h => h.includes('project name') && !h.includes('url'));
+  const keyIndex = findIndex(['issue key', 'issue key']);
+  const summaryIndex = findIndex(['summary']);
+  const statusIndex = findIndex(['status']);
+  const priorityIndex = findIndex(['priority']);
+  const assigneeIndex = findIndex(['assignee']);
+  const createdIndex = findIndex(['created']);
+  const updatedIndex = findIndex(['updated']);
+  const issueTypeIndex = findIndex(['issue type']);
+  const projectIndex = findIndex(['project name']);
 
   const data = [];
   
@@ -304,9 +334,16 @@ function updateCharts() {
   const assigneeCounts = {};
 
   filteredJiraData.forEach(issue => {
-    statusCounts[issue.status] = (statusCounts[issue.status] || 0) + 1;
-    issueTypeCounts[issue.issueType] = (issueTypeCounts[issue.issueType] || 0) + 1;
-    assigneeCounts[issue.assignee] = (assigneeCounts[issue.assignee] || 0) + 1;
+    // Only count non-empty values
+    if (issue.status && issue.status.trim()) {
+      statusCounts[issue.status.trim()] = (statusCounts[issue.status.trim()] || 0) + 1;
+    }
+    if (issue.issueType && issue.issueType.trim()) {
+      issueTypeCounts[issue.issueType.trim()] = (issueTypeCounts[issue.issueType.trim()] || 0) + 1;
+    }
+    if (issue.assignee && issue.assignee.trim()) {
+      assigneeCounts[issue.assignee.trim()] = (assigneeCounts[issue.assignee.trim()] || 0) + 1;
+    }
   });
 
   // Create/Update Charts
@@ -327,14 +364,16 @@ function createCompletedByTypeChart(data) {
   }
 
   const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40', '#ff6384', '#c9cbcf'];
+  const labels = Object.keys(data);
+  const values = Object.values(data);
   
   completedByTypeChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: Object.keys(data),
+      labels: labels,
       datasets: [{
-        data: Object.values(data),
-        backgroundColor: colors.slice(0, Object.keys(data).length),
+        data: values,
+        backgroundColor: colors.slice(0, labels.length),
         borderColor: '#0e2a33',
         borderWidth: 2
       }]
@@ -348,36 +387,37 @@ function createCompletedByTypeChart(data) {
           labels: {
             color: '#a0c9ff',
             font: { size: 12 },
-            padding: 15
+            padding: 15,
+            generateLabels: (chart) => {
+              const data = chart.data;
+              return data.labels.map((label, i) => ({
+                text: label + ' (' + data.datasets[0].data[i] + ')',
+                fillStyle: data.datasets[0].backgroundColor[i],
+                hidden: false,
+                index: i
+              }));
+            }
           }
-        },
-        datalabels: {
-          color: '#ffffff',
-          font: { weight: 'bold', size: 14 },
-          anchor: 'center',
-          align: 'center'
         }
       }
     },
     plugins: [{
       id: 'textCenter',
       afterDatasetsDraw(chart) {
-        const { ctx, data: { datasets, labels }, chartArea } = chart;
+        const { ctx, data: { datasets } } = chart;
         
         ctx.save();
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         
-        datasets.forEach((dataset, datasetIndex) => {
-          const meta = chart.getDatasetMeta(datasetIndex);
-          
+        datasets.forEach((dataset) => {
+          const meta = chart.getDatasetMeta(0);
           meta.data.forEach((datapoint, index) => {
-            const { x, y } = datapoint;
             const value = dataset.data[index];
+            const { x, y } = datapoint;
             
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
             ctx.fillText(value, x, y);
           });
         });
@@ -457,22 +497,28 @@ function createIntakesCompletedChart(statusData) {
   });
 }
 
-function createRequestsPerSquadChart(priorityData) {
+function createRequestsPerSquadChart(issueTypeData) {
   const ctx = document.getElementById('requestsPerSquadChart').getContext('2d');
   
   if (requestsPerSquadChart) {
     requestsPerSquadChart.destroy();
   }
 
-  const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'];
+  if (Object.keys(issueTypeData).length === 0) {
+    return;
+  }
+
+  const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40', '#c9cbcf'];
+  const labels = Object.keys(issueTypeData);
+  const values = Object.values(issueTypeData);
   
   requestsPerSquadChart = new Chart(ctx, {
     type: 'pie',
     data: {
-      labels: Object.keys(priorityData),
+      labels: labels,
       datasets: [{
-        data: Object.values(priorityData),
-        backgroundColor: colors.slice(0, Object.keys(priorityData).length),
+        data: values,
+        backgroundColor: colors.slice(0, labels.length),
         borderColor: '#0e2a33',
         borderWidth: 2
       }]
@@ -486,14 +532,17 @@ function createRequestsPerSquadChart(priorityData) {
           labels: {
             color: '#a0c9ff',
             font: { size: 12 },
-            padding: 15
+            padding: 15,
+            generateLabels: (chart) => {
+              const data = chart.data;
+              return data.labels.map((label, i) => ({
+                text: label + ' (' + data.datasets[0].data[i] + ')',
+                fillStyle: data.datasets[0].backgroundColor[i],
+                hidden: false,
+                index: i
+              }));
+            }
           }
-        },
-        datalabels: {
-          color: '#ffffff',
-          font: { weight: 'bold', size: 14 },
-          anchor: 'center',
-          align: 'center'
         }
       }
     },
@@ -503,19 +552,17 @@ function createRequestsPerSquadChart(priorityData) {
         const { ctx, data: { datasets } } = chart;
         
         ctx.save();
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         
-        datasets.forEach((dataset, datasetIndex) => {
-          const meta = chart.getDatasetMeta(datasetIndex);
-          
+        datasets.forEach((dataset) => {
+          const meta = chart.getDatasetMeta(0);
           meta.data.forEach((datapoint, index) => {
-            const { x, y } = datapoint;
             const value = dataset.data[index];
+            const { x, y } = datapoint;
             
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
             ctx.fillText(value, x, y);
           });
         });
