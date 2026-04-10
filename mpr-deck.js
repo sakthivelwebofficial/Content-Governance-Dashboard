@@ -8,6 +8,33 @@ let requestsPerSquadChart = null;
 let currentMonth = null;
 let currentYear = null;
 
+// Function to create custom legend below charts
+function createCustomLegend(legendId, labels, colors, values) {
+  const legendContainer = document.getElementById(legendId);
+  if (!legendContainer) return;
+
+  // Clear existing legend
+  legendContainer.innerHTML = '';
+
+  // Create legend items
+  labels.forEach((label, index) => {
+    const legendItem = document.createElement('div');
+    legendItem.className = 'legend-item';
+
+    const colorBox = document.createElement('div');
+    colorBox.className = 'legend-color';
+    colorBox.style.backgroundColor = colors[index];
+
+    const label_text = document.createElement('span');
+    label_text.textContent = label + ' (' + values[index] + ')';
+    label_text.style.color = '#ffffff'; // Ensure text is white
+
+    legendItem.appendChild(colorBox);
+    legendItem.appendChild(label_text);
+    legendContainer.appendChild(legendItem);
+  });
+}
+
 // Check login status
 window.addEventListener('load', () => {
   const isLoggedIn = localStorage.getItem('isLoggedIn');
@@ -432,6 +459,9 @@ function createCompletedByTypeChart(data) {
       }
     }]
   });
+
+  // Create custom legend below chart
+  createCustomLegend('completedByTypeLegend', labels, colors.slice(0, labels.length), values);
 }
 
 function createIntakesCompletedChart(statusData) {
@@ -583,6 +613,9 @@ function createRequestsPerSquadChart(issueTypeData) {
       }
     }]
   });
+
+  // Create custom legend below chart
+  createCustomLegend('requestsPerSquadLegend', labels, colors.slice(0, labels.length), values);
 }
 
 function updateStatistics() {

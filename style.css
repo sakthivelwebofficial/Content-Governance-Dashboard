@@ -570,6 +570,53 @@ tr.hidden {
   margin-bottom: 30px;
 }
 
+.chart-container {
+  background: #0a1f28;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #2f5a68;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.chart-container h3 {
+  color: #1f6fd6;
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.chart-container canvas {
+  max-height: 300px;
+  display: block;
+}
+
+.custom-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #2f5a68;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
 .csv-upload-section {
   background: #1a3d47;
   padding: 25px;
