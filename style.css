@@ -417,3 +417,38 @@ tr.hidden {
   margin: 5px 0;
   line-height: 1.6;
 }
+
+/* Wiki Link and Error Message Styles */
+.wiki-link {
+  color: #1f6fd6;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 3px;
+  transition: all 0.3s;
+  display: inline-block;
+}
+
+.wiki-link:hover {
+  background: #1f6fd6;
+  color: white;
+  text-decoration: none;
+}
+
+.error-message {
+  display: none;
+  padding: 10px 15px;
+  margin-top: 10px;
+  background: #3d2a2a;
+  border-left: 4px solid #ff6b6b;
+  border-radius: 3px;
+  color: #ff6b6b;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.form-group small {
+  color: #a0c9ff;
+  font-size: 11px;
+  margin-top: 3px;
+}

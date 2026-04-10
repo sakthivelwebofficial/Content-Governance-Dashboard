@@ -24,6 +24,18 @@ function addComponent(event) {
   const type = document.getElementById('compType').value;
   const description = document.getElementById('compDescription').value;
   const status = document.getElementById('compStatus').value;
+  const wiki = document.getElementById('compWiki').value;
+  const errorMessage = document.getElementById('errorMessage');
+
+  // Validate wiki link
+  if (!isValidUrl(wiki)) {
+    errorMessage.style.display = 'block';
+    errorMessage.textContent = 'Error: Please enter a valid URL (must start with http:// or https://)';
+    errorMessage.style.color = '#ff6b6b';
+    return;
+  }
+
+  errorMessage.style.display = 'none';
 
   let components = JSON.parse(localStorage.getItem('components')) || [];
 
@@ -32,6 +44,7 @@ function addComponent(event) {
     name: name,
     type: type,
     description: description,
+    wiki: wiki,
     status: status,
     createdDate: new Date().toISOString().split('T')[0]
   };
@@ -41,10 +54,21 @@ function addComponent(event) {
 
   // Clear form
   document.querySelector('form').reset();
+  errorMessage.style.display = 'none';
 
   // Reload components
   loadComponents();
   alert('Component added successfully!');
+}
+
+// Function to validate URL
+function isValidUrl(string) {
+  try {
+    const url = new URL(string);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch (_) {
+    return false;
+  }
 }
 
 function loadComponents() {
@@ -53,7 +77,7 @@ function loadComponents() {
   tbody.innerHTML = '';
 
   if (components.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No components yet. Add one to get started!</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No components yet. Add one to get started!</td></tr>';
     return;
   }
 
@@ -63,6 +87,7 @@ function loadComponents() {
       <td>${component.name}</td>
       <td>${component.type}</td>
       <td>${component.description}</td>
+      <td><a href="${component.wiki}" target="_blank" class="wiki-link">📖 Open Wiki</a></td>
       <td><span class="status-badge ${component.status.toLowerCase()}">${component.status}</span></td>
       <td>${component.createdDate}</td>
       <td><button onclick="deleteComponent(${component.id})" class="delete-btn">Delete</button></td>
@@ -90,11 +115,11 @@ function exportComponents() {
   }
 
   const csvData = components.map(c => {
-    const values = [c.name, c.type, c.description, c.status, c.createdDate];
+    const values = [c.name, c.type, c.description, c.wiki, c.status, c.createdDate];
     return values.map(v => `"${v.replace(/"/g, '""')}"`).join(',');
   });
 
-  const header = '"Name","Type","Description","Status","Created Date"';
+  const header = '"Name","Type","Description","Wiki Link","Status","Created Date"';
   const csv = header + '\n' + csvData.join('\n');
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
