@@ -347,32 +347,41 @@ function createCompletedByTypeChart(data) {
           position: 'bottom',
           labels: {
             color: '#a0c9ff',
-            font: { size: 12 }
+            font: { size: 12 },
+            padding: 15
           }
+        },
+        datalabels: {
+          color: '#ffffff',
+          font: { weight: 'bold', size: 14 },
+          anchor: 'center',
+          align: 'center'
         }
       }
     },
     plugins: [{
       id: 'textCenter',
       afterDatasetsDraw(chart) {
-        const { ctx, chartArea: { left, top, width, height } } = chart;
+        const { ctx, data: { datasets, labels }, chartArea } = chart;
+        
         ctx.save();
-
-        chart.data.datasets.forEach((datasheet, datasetIndex) => {
+        
+        datasets.forEach((dataset, datasetIndex) => {
           const meta = chart.getDatasetMeta(datasetIndex);
-          meta.data.forEach((bar, index) => {
-            const data = datasheet.data[index];
+          
+          meta.data.forEach((datapoint, index) => {
+            const { x, y } = datapoint;
+            const value = dataset.data[index];
             
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 13px Arial';
+            ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-
-            const { x, y } = bar.getProps(['x', 'y'], true);
-            ctx.fillText(data, x, y);
+            
+            ctx.fillText(value, x, y);
           });
         });
-
+        
         ctx.restore();
       }
     }]
@@ -476,32 +485,41 @@ function createRequestsPerSquadChart(priorityData) {
           position: 'bottom',
           labels: {
             color: '#a0c9ff',
-            font: { size: 12 }
+            font: { size: 12 },
+            padding: 15
           }
+        },
+        datalabels: {
+          color: '#ffffff',
+          font: { weight: 'bold', size: 14 },
+          anchor: 'center',
+          align: 'center'
         }
       }
     },
     plugins: [{
       id: 'textCenter',
       afterDatasetsDraw(chart) {
-        const { ctx, chartArea: { left, top, width, height } } = chart;
+        const { ctx, data: { datasets } } = chart;
+        
         ctx.save();
-
-        chart.data.datasets.forEach((datasheet, datasetIndex) => {
+        
+        datasets.forEach((dataset, datasetIndex) => {
           const meta = chart.getDatasetMeta(datasetIndex);
-          meta.data.forEach((bar, index) => {
-            const data = datasheet.data[index];
+          
+          meta.data.forEach((datapoint, index) => {
+            const { x, y } = datapoint;
+            const value = dataset.data[index];
             
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 13px Arial';
+            ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-
-            const { x, y } = bar.getProps(['x', 'y'], true);
-            ctx.fillText(data, x, y);
+            
+            ctx.fillText(value, x, y);
           });
         });
-
+        
         ctx.restore();
       }
     }]
