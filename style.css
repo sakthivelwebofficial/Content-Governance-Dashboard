@@ -452,3 +452,222 @@ tr.hidden {
   font-size: 11px;
   margin-top: 3px;
 }
+
+/* MPR Deck Page Styles */
+.stats-container {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1;
+  min-width: 150px;
+  background: linear-gradient(135deg, #1a3d47 0%, #102b33 100%);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #2f5a68;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.stat-label {
+  color: #a0c9ff;
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  color: #1f6fd6;
+  font-size: 36px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.stat-sublabel {
+  color: #a0c9ff;
+  font-size: 12px;
+}
+
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.csv-upload-section {
+  background: #1a3d47;
+  padding: 25px;
+  border-radius: 8px;
+  border: 1px solid #2f5a68;
+  margin-top: 30px;
+}
+
+.csv-upload-section h2 {
+  color: #1f6fd6;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+.upload-container {
+  background: #102b33;
+  padding: 20px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border: 1px dashed #2f5a68;
+}
+
+.upload-container label {
+  display: block;
+  color: white;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.upload-container input[type="file"] {
+  display: block;
+  margin-bottom: 10px;
+  cursor: pointer;
+  color: #a0c9ff;
+}
+
+.upload-container small {
+  display: block;
+  color: #a0c9ff;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.jira-table-section {
+  margin-top: 20px;
+}
+
+.jira-table-section h3 {
+  color: #1f6fd6;
+  margin-bottom: 15px;
+}
+
+.table-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.table-controls input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px;
+  background: #102b33;
+  border: 1px solid #4f6f7a;
+  border-radius: 3px;
+  color: white;
+  font-size: 13px;
+}
+
+.table-controls input:focus {
+  outline: none;
+  border-color: #1f6fd6;
+  box-shadow: 0 0 5px rgba(31, 111, 214, 0.3);
+}
+
+.table-controls button {
+  padding: 10px 20px;
+  background: #1f6fd6;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.table-controls button:hover {
+  background: #1a5ab8;
+}
+
+#jiraTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: #102b33;
+  border: 1px solid #2f5a68;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+#jiraTable thead {
+  background: #0a1f28;
+  border-bottom: 2px solid #1f6fd6;
+}
+
+#jiraTable th {
+  color: #1f6fd6;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 13px;
+  border-right: 1px solid #2f5a68;
+}
+
+#jiraTable th:last-child {
+  border-right: none;
+}
+
+#jiraTable td {
+  color: white;
+  padding: 10px 12px;
+  border-bottom: 1px solid #2f5a68;
+  border-right: 1px solid #2f5a68;
+  font-size: 12px;
+}
+
+#jiraTable td:last-child {
+  border-right: none;
+}
+
+#jiraTable tbody tr:hover {
+  background: #1a3d47;
+}
+
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.status-done,
+.status-closed,
+.status-resolved {
+  background: #2d5a3d;
+  color: #51cf66;
+}
+
+.status-in-progress,
+.status-inprogress {
+  background: #5a4a2d;
+  color: #ffd43b;
+}
+
+.status-to-do,
+.status-todo,
+.status-open {
+  background: #5a3d3d;
+  color: #ff8c7c;
+}
+
+.status-blocked {
+  background: #5a3d3d;
+  color: #ff6b6b;
+}
+
+.status-pending {
+  background: #3d4a5a;
+  color: #a0c9ff;
+}

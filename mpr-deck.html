@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MPR Deck Data - Content Governance Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">Content Governance Dashboard</div>
+      <ul class="navbar-menu">
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="components.html">Components</a></li>
+        <li><a href="mpr-deck.html" class="active">MPR Deck</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="navbar-right">
+        <span id="userDisplay">Welcome, User</span>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>MPR Deck Data</h1>
+
+    <!-- Statistics Section -->
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-label">Last 30 Days</div>
+        <div class="stat-value" id="statLast30">0</div>
+        <div class="stat-sublabel">Intakes Received</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">YTD</div>
+        <div class="stat-value" id="statYTD">0</div>
+        <div class="stat-sublabel">Intakes Received</div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-row">
+      <div class="chart-container">
+        <h3>Completed Requests by Content Type</h3>
+        <canvas id="completedByTypeChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <h3>Intakes Completed</h3>
+        <canvas id="intakesCompletedChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <h3>Content Requests per Squad</h3>
+        <canvas id="requestsPerSquadChart"></canvas>
+      </div>
+    </div>
+
+    <!-- CSV Upload Section -->
+    <div class="csv-upload-section">
+      <h2>Jira Issues Data</h2>
+      <div class="upload-container">
+        <label for="csvFile">Upload Jira Issues CSV File:</label>
+        <input type="file" id="csvFile" accept=".csv" onchange="handleCSVUpload(event)">
+        <small>Expected columns: Issue Key, Summary, Status, Priority, Assignee, Created, Updated</small>
+        <div id="uploadError" class="error-message"></div>
+      </div>
+
+      <!-- Jira Issues Table -->
+      <div class="jira-table-section">
+        <h3>Jira Issues List</h3>
+        <div class="table-controls">
+          <input type="text" id="searchJira" placeholder="Search issues..." onkeyup="filterJiraTable()">
+          <button onclick="exportJiraData()">Export</button>
+        </div>
+        <table id="jiraTable">
+          <thead>
+            <tr>
+              <th>Issue Key</th>
+              <th>Summary</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Assignee</th>
+              <th>Created</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Jira issues will be populated here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="mpr-deck.js"></script>
+</body>
+</html>
