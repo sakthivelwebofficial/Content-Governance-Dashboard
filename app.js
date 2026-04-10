@@ -72,10 +72,12 @@ window.addEventListener('load', () => {
   
   // Initialize tbody and load data
   tbody = document.querySelector('#grid tbody');
+  
+  // Load data with placement and membership
   dummyData.forEach(addRowWithData);
   
   // Initialize charts
-  initializeCharts();
+  setTimeout(initializeCharts, 100);
 });
 
 function addRow() {
@@ -167,8 +169,8 @@ function applyFilter() {
   
   const rows = [...tbody.querySelectorAll('tr')];
   rows.forEach(row => {
-    const expiryCell = row.querySelectorAll('td')[5];
-    const expiryDate = expiryCell.innerText;
+    const cells = row.querySelectorAll('td');
+    const expiryDate = cells[7].innerText;
     
     let isInRange = true;
     if (startDate && expiryDate < startDate) {
@@ -204,21 +206,22 @@ function updateCharts() {
   
   rows.forEach(row => {
     const cells = row.querySelectorAll('td');
-    if (cells.length >= 6) {
-      const expiry = cells[5].innerText;
+    if (cells.length >= 8) {
+      // Column indices: 0=REC ID, 1=Title, 2=Type, 3=Team, 4=Placement, 5=Membership, 6=Workfront, 7=Expiry Date
+      const expiry = cells[7].innerText;
       const team = cells[3].innerText;
       const type = cells[2].innerText;
       
-      if (expiry) {
+      if (expiry && expiry.trim() !== '') {
         const month = expiry.substring(0, 7); // YYYY-MM format
         monthlyData[month] = (monthlyData[month] || 0) + 1;
       }
       
-      if (team) {
+      if (team && team.trim() !== '') {
         teamData[team] = (teamData[team] || 0) + 1;
       }
       
-      if (type) {
+      if (type && type.trim() !== '') {
         typeData[type] = (typeData[type] || 0) + 1;
       }
     }
@@ -240,8 +243,9 @@ function updateStats(rows, monthlyData) {
   
   const teams = new Set();
   rows.forEach(row => {
-    const team = row.querySelectorAll('td')[3].innerText;
-    if (team) teams.add(team);
+    const cells = row.querySelectorAll('td');
+    const team = cells[3].innerText;
+    if (team && team.trim() !== '') teams.add(team);
   });
   
   document.getElementById('totalRecords').textContent = totalRecords;
@@ -256,6 +260,12 @@ function createMonthlyChart(data) {
   const months = Object.keys(data).sort();
   const values = months.map(m => data[m]);
   
+  // If no data, show empty state
+  if (months.length === 0) {
+    months.push('No Data');
+    values.push(0);
+  }
+  
   if (monthlyChartInstance) {
     monthlyChartInstance.destroy();
   }
@@ -263,10 +273,10 @@ function createMonthlyChart(data) {
   monthlyChartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: months,
+      labels: months.length > 0 ? months : ['No Data'],
       datasets: [{
         label: 'Records',
-        data: values,
+        data: values.length > 0 ? values : [0],
         backgroundColor: '#1f6fd6',
         borderColor: '#1551a8',
         borderWidth: 1
