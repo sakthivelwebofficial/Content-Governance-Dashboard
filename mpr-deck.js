@@ -5,7 +5,7 @@ let chartsInitialized = false;
 let completedByTypeChart = null;
 let intakesCompletedChart = null;
 let progressDistributionChart = null;
-let statusDistributionChart = null;
+let componentsDistributionChart = null;
 let currentMonth = null;
 let currentYear = null;
 
@@ -172,6 +172,7 @@ function parseCSV(lines) {
   const updatedIndex = findIndex(['updated']);
   const issueTypeIndex = findIndex(['issue type']);
   const projectIndex = findIndex(['project name']);
+  const componentIndex = findIndex(['component', 'components']);
 
   const data = [];
   
@@ -192,7 +193,8 @@ function parseCSV(lines) {
         created: createdIndex >= 0 ? values[createdIndex] : '',
         updated: updatedIndex >= 0 ? values[updatedIndex] : '',
         issueType: issueTypeIndex >= 0 ? values[issueTypeIndex] : '',
-        project: projectIndex >= 0 ? values[projectIndex] : ''
+        project: projectIndex >= 0 ? values[projectIndex] : '',
+        component: componentIndex >= 0 ? values[componentIndex] : ''
       });
     }
   }
@@ -360,6 +362,7 @@ function updateCharts() {
   const statusCounts = {};
   const issueTypeCounts = {};
   const assigneeCounts = {};
+  const componentCounts = {};
   const progressCounts = { 'In Progress': 0, 'Completed': 0 };
 
   filteredJiraData.forEach(issue => {
@@ -381,13 +384,16 @@ function updateCharts() {
     if (issue.assignee && issue.assignee.trim()) {
       assigneeCounts[issue.assignee.trim()] = (assigneeCounts[issue.assignee.trim()] || 0) + 1;
     }
+    if (issue.component && issue.component.trim()) {
+      componentCounts[issue.component.trim()] = (componentCounts[issue.component.trim()] || 0) + 1;
+    }
   });
 
   // Create/Update Charts
   createCompletedByTypeChart(assigneeCounts);
   createIntakesCompletedChart(statusCounts);
   createProgressDistributionChart(progressCounts);
-  createStatusDistributionChart(statusCounts);
+  createComponentsDistributionChart(componentCounts);
 }
 
 function createCompletedByTypeChart(data) {
@@ -577,34 +583,29 @@ function createProgressDistributionChart(progressData) {
   createCustomLegend('progressDistributionLegend', labels, colors, values);
 }
 
-function createStatusDistributionChart(statusData) {
-  const ctx = document.getElementById('statusDistributionChart').getContext('2d');
+function createComponentsDistributionChart(componentData) {
+  const ctx = document.getElementById('componentsDistributionChart').getContext('2d');
   
-  if (statusDistributionChart) {
-    statusDistributionChart.destroy();
+  if (componentsDistributionChart) {
+    componentsDistributionChart.destroy();
   }
 
-  if (Object.keys(statusData).length === 0) {
+  if (Object.keys(componentData).length === 0) {
     return;
   }
 
-  // Color mapping for status values - modern, vibrant color palette
-  const statusColors = {
-    'To Do': '#FF6B6B',
-    'In Progress': '#4ECDC4',
-    'Done': '#45B7D1',
-    'Closed': '#95E1D3',
-    'Resolved': '#F38181',
-    'Blocked': '#AA4465',
-    'Open': '#FCBAD3',
-    'Pending': '#B4A7D6'
-  };
+  // Color palette for components - vibrant and distinct colors
+  const componentColors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#95E1D3', '#F38181',
+    '#AA4465', '#FCBAD3', '#B4A7D6', '#FECA57', '#48DBFB',
+    '#FF9FF3', '#54A0FF', '#1ABC9C', '#E74C3C', '#3498DB'
+  ];
 
-  const labels = Object.keys(statusData);
-  const values = Object.values(statusData);
-  const colors = labels.map(label => statusColors[label] || '#9966ff');
+  const labels = Object.keys(componentData);
+  const values = Object.values(componentData);
+  const colors = labels.map((label, idx) => componentColors[idx % componentColors.length]);
 
-  statusDistributionChart = new Chart(ctx, {
+  componentsDistributionChart = new Chart(ctx, {
     type: 'pie',
     data: {
       labels: labels,
@@ -641,7 +642,7 @@ function createStatusDistributionChart(statusData) {
     }
   });
 
-  createCustomLegend('statusDistributionLegend', labels, colors, values);
+  createCustomLegend('componentsDistributionLegend', labels, colors, values);
 }
 
 function createRequestsPerSquadChart(issueTypeData) {
