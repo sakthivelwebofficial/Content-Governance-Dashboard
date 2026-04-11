@@ -438,37 +438,7 @@ function createCompletedByTypeChart(data) {
           }
         }
       }
-    },
-    plugins: [{
-      id: 'textCenter',
-      afterDatasetsDraw(chart) {
-        const { ctx, data: { datasets } } = chart;
-        
-        ctx.save();
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        
-        datasets.forEach((dataset) => {
-          const meta = chart.getDatasetMeta(0);
-          meta.data.forEach((datapoint, index) => {
-            const value = dataset.data[index];
-            const { x, y } = datapoint;
-            
-            // Draw stroke first for outline
-            ctx.strokeText(value, x, y);
-            // Then draw filled text in white
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(value, x, y);
-          });
-        });
-        
-        ctx.restore();
-      }
-    }]
+    }
   });
 
   // Create custom legend below chart
@@ -599,35 +569,7 @@ function createProgressDistributionChart(progressData) {
           }
         }
       }
-    },
-    plugins: [{
-      id: 'textCenter',
-      afterDatasetsDraw(chart) {
-        const { ctx, data: { datasets } } = chart;
-        
-        ctx.save();
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        
-        datasets.forEach((dataset) => {
-          const meta = chart.getDatasetMeta(0);
-          meta.data.forEach((datapoint, index) => {
-            const value = dataset.data[index];
-            const { x, y } = datapoint;
-            
-            ctx.strokeText(value, x, y);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(value, x, y);
-          });
-        });
-        
-        ctx.restore();
-      }
-    }]
+    }
   });
 
   createCustomLegend('progressDistributionLegend', labels, colors, values);
@@ -693,35 +635,7 @@ function createStatusDistributionChart(statusData) {
           }
         }
       }
-    },
-    plugins: [{
-      id: 'textCenter',
-      afterDatasetsDraw(chart) {
-        const { ctx, data: { datasets } } = chart;
-        
-        ctx.save();
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        
-        datasets.forEach((dataset) => {
-          const meta = chart.getDatasetMeta(0);
-          meta.data.forEach((datapoint, index) => {
-            const value = dataset.data[index];
-            const { x, y } = datapoint;
-            
-            ctx.strokeText(value, x, y);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(value, x, y);
-          });
-        });
-        
-        ctx.restore();
-      }
-    }]
+    }
   });
 
   createCustomLegend('statusDistributionLegend', labels, colors, values);
@@ -775,37 +689,7 @@ function createRequestsPerSquadChart(issueTypeData) {
           }
         }
       }
-    },
-    plugins: [{
-      id: 'textCenter',
-      afterDatasetsDraw(chart) {
-        const { ctx, data: { datasets } } = chart;
-        
-        ctx.save();
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        
-        datasets.forEach((dataset) => {
-          const meta = chart.getDatasetMeta(0);
-          meta.data.forEach((datapoint, index) => {
-            const value = dataset.data[index];
-            const { x, y } = datapoint;
-            
-            // Draw stroke first for outline
-            ctx.strokeText(value, x, y);
-            // Then draw filled text in white
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(value, x, y);
-          });
-        });
-        
-        ctx.restore();
-      }
-    }]
+    }
   });
 
   // Create custom legend below chart
