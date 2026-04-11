@@ -438,6 +438,12 @@ function createCompletedByTypeChart(data) {
             }
           }
         }
+      }
+    }
+  });
+
+  // Create custom legend below chart
+  createCustomLegend('completedByTypeLegend', labels, colors.slice(0, labels.length), values);
 }
 
 function createIntakesCompletedChart(statusData) {
