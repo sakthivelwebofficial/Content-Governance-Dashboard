@@ -172,7 +172,8 @@ function parseCSV(lines) {
   const updatedIndex = findIndex(['updated']);
   const issueTypeIndex = findIndex(['issue type']);
   const projectIndex = findIndex(['project name']);
-  const componentIndex = findIndex(['component', 'components']);
+  // Component column - look for 'component' with or without 's', and also handle 'component/s'
+  const componentIndex = findIndex(['component/s', 'component', 'components']);
 
   const data = [];
   
@@ -590,7 +591,46 @@ function createComponentsDistributionChart(componentData) {
     componentsDistributionChart.destroy();
   }
 
-  if (Object.keys(componentData).length === 0) {
+  // Filter out empty component names and get non-empty data
+  const filteredComponentData = {};
+  Object.keys(componentData).forEach(key => {
+    if (key && key.trim()) {
+      filteredComponentData[key] = componentData[key];
+    }
+  });
+
+  // If no valid component data, show placeholder
+  if (Object.keys(filteredComponentData).length === 0) {
+    // Create empty chart with message
+    componentsDistributionChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['No Component Data'],
+        datasets: [{
+          data: [1],
+          backgroundColor: ['#cccccc'],
+          borderColor: '#0e2a33',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              label: function() {
+                return 'Upload CSV to see component distribution';
+              }
+            }
+          }
+        }
+      }
+    });
     return;
   }
 
@@ -601,8 +641,8 @@ function createComponentsDistributionChart(componentData) {
     '#FF9FF3', '#54A0FF', '#1ABC9C', '#E74C3C', '#3498DB'
   ];
 
-  const labels = Object.keys(componentData);
-  const values = Object.values(componentData);
+  const labels = Object.keys(filteredComponentData);
+  const values = Object.values(filteredComponentData);
   const colors = labels.map((label, idx) => componentColors[idx % componentColors.length]);
 
   componentsDistributionChart = new Chart(ctx, {
