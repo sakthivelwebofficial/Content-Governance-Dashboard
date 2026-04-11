@@ -376,7 +376,6 @@ function updateCharts() {
   // Create/Update Charts
   createCompletedByTypeChart(assigneeCounts);
   createIntakesCompletedChart(statusCounts);
-  createRequestsPerSquadChart(issueTypeCounts);
 }
 
 function createCompletedByTypeChart(data) {
