@@ -4,7 +4,7 @@ let filteredJiraData = [];
 let chartsInitialized = false;
 let completedByTypeChart = null;
 let intakesCompletedChart = null;
-let priorityDistributionChart = null;
+let progressDistributionChart = null;
 let statusDistributionChart = null;
 let currentMonth = null;
 let currentYear = null;
@@ -360,12 +360,20 @@ function updateCharts() {
   const statusCounts = {};
   const issueTypeCounts = {};
   const assigneeCounts = {};
-  const priorityCounts = {};
+  const progressCounts = { 'In Progress': 0, 'Completed': 0 };
 
   filteredJiraData.forEach(issue => {
     // Only count non-empty values
     if (issue.status && issue.status.trim()) {
       statusCounts[issue.status.trim()] = (statusCounts[issue.status.trim()] || 0) + 1;
+      
+      // Group into In Progress vs Completed
+      const status = issue.status.trim().toLowerCase();
+      if (status === 'in progress' || status === 'inprogress') {
+        progressCounts['In Progress']++;
+      } else if (status === 'done' || status === 'closed' || status === 'resolved') {
+        progressCounts['Completed']++;
+      }
     }
     if (issue.issueType && issue.issueType.trim()) {
       issueTypeCounts[issue.issueType.trim()] = (issueTypeCounts[issue.issueType.trim()] || 0) + 1;
@@ -373,15 +381,12 @@ function updateCharts() {
     if (issue.assignee && issue.assignee.trim()) {
       assigneeCounts[issue.assignee.trim()] = (assigneeCounts[issue.assignee.trim()] || 0) + 1;
     }
-    if (issue.priority && issue.priority.trim()) {
-      priorityCounts[issue.priority.trim()] = (priorityCounts[issue.priority.trim()] || 0) + 1;
-    }
   });
 
   // Create/Update Charts
   createCompletedByTypeChart(assigneeCounts);
   createIntakesCompletedChart(statusCounts);
-  createPriorityDistributionChart(priorityCounts);
+  createProgressDistributionChart(progressCounts);
   createStatusDistributionChart(statusCounts);
 }
 
@@ -539,32 +544,29 @@ function createIntakesCompletedChart(statusData) {
   });
 }
 
-function createPriorityDistributionChart(priorityData) {
-  const ctx = document.getElementById('priorityDistributionChart').getContext('2d');
+function createProgressDistributionChart(progressData) {
+  const ctx = document.getElementById('progressDistributionChart').getContext('2d');
   
-  if (priorityDistributionChart) {
-    priorityDistributionChart.destroy();
+  if (progressDistributionChart) {
+    progressDistributionChart.destroy();
   }
 
-  if (Object.keys(priorityData).length === 0) {
+  const labels = Object.keys(progressData).filter(key => progressData[key] > 0);
+  const values = labels.map(key => progressData[key]);
+  
+  if (labels.length === 0) {
     return;
   }
 
-  // Color mapping for priority levels
-  const priorityColors = {
-    'Critical': '#ff6b6b',
-    'Highest': '#ff8787',
-    'High': '#ffa5a5',
-    'Medium': '#ffce56',
-    'Low': '#36a2eb',
-    'Lowest': '#a0c9ff'
+  // Color mapping for progress status
+  const progressColors = {
+    'In Progress': '#ffd43b',  // Yellow - active work
+    'Completed': '#51cf66'     // Green - done work
   };
 
-  const labels = Object.keys(priorityData);
-  const values = Object.values(priorityData);
-  const colors = labels.map(label => priorityColors[label] || '#9966ff');
+  const colors = labels.map(label => progressColors[label] || '#9966ff');
 
-  priorityDistributionChart = new Chart(ctx, {
+  progressDistributionChart = new Chart(ctx, {
     type: 'pie',
     data: {
       labels: labels,
@@ -628,7 +630,7 @@ function createPriorityDistributionChart(priorityData) {
     }]
   });
 
-  createCustomLegend('priorityDistributionLegend', labels, colors, values);
+  createCustomLegend('progressDistributionLegend', labels, colors, values);
 }
 
 function createStatusDistributionChart(statusData) {
@@ -642,15 +644,15 @@ function createStatusDistributionChart(statusData) {
     return;
   }
 
-  // Color mapping for status values
+  // Color mapping for status values - each status gets unique color
   const statusColors = {
     'To Do': '#ff8c7c',
     'In Progress': '#ffd43b',
     'Done': '#51cf66',
-    'Closed': '#51cf66',
-    'Resolved': '#51cf66',
+    'Closed': '#36a2eb',
+    'Resolved': '#9966ff',
     'Blocked': '#ff6b6b',
-    'Open': '#ff8c7c',
+    'Open': '#ffa5a5',
     'Pending': '#a0c9ff'
   };
 
