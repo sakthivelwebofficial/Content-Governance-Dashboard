@@ -588,16 +588,16 @@ function createStatusDistributionChart(statusData) {
     return;
   }
 
-  // Color mapping for status values - each status gets unique color
+  // Color mapping for status values - modern, vibrant color palette
   const statusColors = {
-    'To Do': '#ff8c7c',
-    'In Progress': '#ffd43b',
-    'Done': '#51cf66',
-    'Closed': '#36a2eb',
-    'Resolved': '#9966ff',
-    'Blocked': '#ff6b6b',
-    'Open': '#ffa5a5',
-    'Pending': '#a0c9ff'
+    'To Do': '#FF6B6B',
+    'In Progress': '#4ECDC4',
+    'Done': '#45B7D1',
+    'Closed': '#95E1D3',
+    'Resolved': '#F38181',
+    'Blocked': '#AA4465',
+    'Open': '#FCBAD3',
+    'Pending': '#B4A7D6'
   };
 
   const labels = Object.keys(statusData);
