@@ -4,7 +4,8 @@ let filteredJiraData = [];
 let chartsInitialized = false;
 let completedByTypeChart = null;
 let intakesCompletedChart = null;
-let requestsPerSquadChart = null;
+let priorityDistributionChart = null;
+let statusDistributionChart = null;
 let currentMonth = null;
 let currentYear = null;
 
@@ -359,6 +360,7 @@ function updateCharts() {
   const statusCounts = {};
   const issueTypeCounts = {};
   const assigneeCounts = {};
+  const priorityCounts = {};
 
   filteredJiraData.forEach(issue => {
     // Only count non-empty values
@@ -371,11 +373,16 @@ function updateCharts() {
     if (issue.assignee && issue.assignee.trim()) {
       assigneeCounts[issue.assignee.trim()] = (assigneeCounts[issue.assignee.trim()] || 0) + 1;
     }
+    if (issue.priority && issue.priority.trim()) {
+      priorityCounts[issue.priority.trim()] = (priorityCounts[issue.priority.trim()] || 0) + 1;
+    }
   });
 
   // Create/Update Charts
   createCompletedByTypeChart(assigneeCounts);
   createIntakesCompletedChart(statusCounts);
+  createPriorityDistributionChart(priorityCounts);
+  createStatusDistributionChart(statusCounts);
 }
 
 function createCompletedByTypeChart(data) {
@@ -530,6 +537,192 @@ function createIntakesCompletedChart(statusData) {
       }
     }]
   });
+}
+
+function createPriorityDistributionChart(priorityData) {
+  const ctx = document.getElementById('priorityDistributionChart').getContext('2d');
+  
+  if (priorityDistributionChart) {
+    priorityDistributionChart.destroy();
+  }
+
+  if (Object.keys(priorityData).length === 0) {
+    return;
+  }
+
+  // Color mapping for priority levels
+  const priorityColors = {
+    'Critical': '#ff6b6b',
+    'Highest': '#ff8787',
+    'High': '#ffa5a5',
+    'Medium': '#ffce56',
+    'Low': '#36a2eb',
+    'Lowest': '#a0c9ff'
+  };
+
+  const labels = Object.keys(priorityData);
+  const values = Object.values(priorityData);
+  const colors = labels.map(label => priorityColors[label] || '#9966ff');
+
+  priorityDistributionChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderColor: '#0e2a33',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#ffffff',
+            font: { size: 12, weight: 'bold' },
+            padding: 15,
+            generateLabels: (chart) => {
+              const data = chart.data;
+              return data.labels.map((label, i) => ({
+                text: label + ' (' + data.datasets[0].data[i] + ')',
+                fillStyle: data.datasets[0].backgroundColor[i],
+                hidden: false,
+                index: i
+              }));
+            }
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'textCenter',
+      afterDatasetsDraw(chart) {
+        const { ctx, data: { datasets } } = chart;
+        
+        ctx.save();
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        
+        datasets.forEach((dataset) => {
+          const meta = chart.getDatasetMeta(0);
+          meta.data.forEach((datapoint, index) => {
+            const value = dataset.data[index];
+            const { x, y } = datapoint;
+            
+            ctx.strokeText(value, x, y);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(value, x, y);
+          });
+        });
+        
+        ctx.restore();
+      }
+    }]
+  });
+
+  createCustomLegend('priorityDistributionLegend', labels, colors, values);
+}
+
+function createStatusDistributionChart(statusData) {
+  const ctx = document.getElementById('statusDistributionChart').getContext('2d');
+  
+  if (statusDistributionChart) {
+    statusDistributionChart.destroy();
+  }
+
+  if (Object.keys(statusData).length === 0) {
+    return;
+  }
+
+  // Color mapping for status values
+  const statusColors = {
+    'To Do': '#ff8c7c',
+    'In Progress': '#ffd43b',
+    'Done': '#51cf66',
+    'Closed': '#51cf66',
+    'Resolved': '#51cf66',
+    'Blocked': '#ff6b6b',
+    'Open': '#ff8c7c',
+    'Pending': '#a0c9ff'
+  };
+
+  const labels = Object.keys(statusData);
+  const values = Object.values(statusData);
+  const colors = labels.map(label => statusColors[label] || '#9966ff');
+
+  statusDistributionChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderColor: '#0e2a33',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#ffffff',
+            font: { size: 12, weight: 'bold' },
+            padding: 15,
+            generateLabels: (chart) => {
+              const data = chart.data;
+              return data.labels.map((label, i) => ({
+                text: label + ' (' + data.datasets[0].data[i] + ')',
+                fillStyle: data.datasets[0].backgroundColor[i],
+                hidden: false,
+                index: i
+              }));
+            }
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'textCenter',
+      afterDatasetsDraw(chart) {
+        const { ctx, data: { datasets } } = chart;
+        
+        ctx.save();
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        
+        datasets.forEach((dataset) => {
+          const meta = chart.getDatasetMeta(0);
+          meta.data.forEach((datapoint, index) => {
+            const value = dataset.data[index];
+            const { x, y } = datapoint;
+            
+            ctx.strokeText(value, x, y);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(value, x, y);
+          });
+        });
+        
+        ctx.restore();
+      }
+    }]
+  });
+
+  createCustomLegend('statusDistributionLegend', labels, colors, values);
 }
 
 function createRequestsPerSquadChart(issueTypeData) {
