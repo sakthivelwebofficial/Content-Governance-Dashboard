@@ -421,6 +421,7 @@ function createCompletedByTypeChart(data) {
       maintainAspectRatio: true,
       plugins: {
         legend: {
+          display: false,
           position: 'bottom',
           labels: {
             color: '#ffffff',
@@ -437,12 +438,6 @@ function createCompletedByTypeChart(data) {
             }
           }
         }
-      }
-    }
-  });
-
-  // Create custom legend below chart
-  createCustomLegend('completedByTypeLegend', labels, colors.slice(0, labels.length), values);
 }
 
 function createIntakesCompletedChart(statusData) {
@@ -552,6 +547,7 @@ function createProgressDistributionChart(progressData) {
       maintainAspectRatio: true,
       plugins: {
         legend: {
+          display: false,
           position: 'bottom',
           labels: {
             color: '#ffffff',
@@ -618,6 +614,7 @@ function createStatusDistributionChart(statusData) {
       maintainAspectRatio: true,
       plugins: {
         legend: {
+          display: false,
           position: 'bottom',
           labels: {
             color: '#ffffff',
