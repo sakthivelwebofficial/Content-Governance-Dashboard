@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>URL Decoder / Encoder - Content Ops</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <div class="brand-icon">⚙️</div>
+        <span class="brand-text">Content Ops</span>
+      </div>
+      <ul class="navbar-menu">
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="mpr-deck.html">MPR Deck</a></li>
+        <li><a href="snake-case.html">Snake Case</a></li>
+        <li><a href="text-compare.html">Text Compare</a></li>
+        <li><a href="url-encoder.html" class="active">URL Encoder</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="navbar-right">
+        <span>Text Tools</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container tool-container snake-tool">
+    <h1 class="tool-heading">URL Decoder / Encoder</h1>
+    <p class="tool-subtitle">Encode or decode a URL component using UTF-8 percent encoding.</p>
+
+    <section class="snake-panel" aria-label="URL decoder and encoder">
+      <div class="snake-field">
+        <label for="urlInput">Input</label>
+        <textarea id="urlInput" placeholder="Paste text or a URL component" spellcheck="false"></textarea>
+      </div>
+      <div class="snake-actions" aria-label="URL conversion actions">
+        <button id="decodeButton" type="button">Decode</button>
+        <button id="encodeButton" type="button">Encode</button>
+        <button id="copyUrlButton" class="secondary-action" type="button" title="Copy output" aria-label="Copy output">Copy</button>
+        <button id="clearUrlButton" class="secondary-action" type="button">Clear</button>
+      </div>
+      <div class="snake-field">
+        <label for="urlOutput">Output</label>
+        <textarea id="urlOutput" readonly placeholder="Converted text appears here" spellcheck="false"></textarea>
+      </div>
+      <p id="urlStatus" class="snake-status" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+  <script src="url-encoder.js"></script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>MPR Deck Data - Content Governance Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -13,8 +14,10 @@
       </div>
       <ul class="navbar-menu">
         <li><a href="index.html">Dashboard</a></li>
-        <li><a href="components.html">Components</a></li>
         <li><a href="mpr-deck.html" class="active">MPR Deck</a></li>
+        <li><a href="snake-case.html">Snake Case</a></li>
+        <li><a href="text-compare.html">Text Compare</a></li>
+        <li><a href="url-encoder.html">URL Encoder</a></li>
         <li><a href="about.html">About</a></li>
       </ul>
       <div class="navbar-right">
@@ -41,9 +44,56 @@
       <div class="stat-card">
         <div class="stat-label">Current Month</div>
         <div class="stat-value" id="statCurrentMonth">0</div>
-        <div class="stat-sublabel">Issues in View</div>
+        <div class="stat-sublabel">Intakes Received</div>
       </div>
     </div>
+
+    <section class="leadership-summary">
+      <h2>Leadership Snapshot</h2>
+      <div class="stats-container leadership-kpis">
+        <div class="stat-card">
+          <div class="stat-label">All Tickets</div>
+          <div class="stat-value" id="summaryAllTickets">0</div>
+          <div class="stat-sublabel">Uploaded</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tickets in View</div>
+          <div class="stat-value" id="summaryTicketsInView">0</div>
+          <div class="stat-sublabel">Selected scope</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value" id="summaryCompleted">0</div>
+          <div class="stat-sublabel">Tickets in view</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">In Progress</div>
+          <div class="stat-value" id="summaryInProgress">0</div>
+          <div class="stat-sublabel">Tickets in view</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completion Rate</div>
+          <div class="stat-value" id="summaryCompletionRate">0%</div>
+          <div class="stat-sublabel">Completed / in view</div>
+        </div>
+      </div>
+
+      <div class="workfront-table-section assignee-summary-section">
+        <h3>Tickets by Assignee</h3>
+        <table id="assigneeSummaryTable">
+          <thead>
+            <tr>
+              <th>Assignee</th>
+              <th>Total Tickets</th>
+              <th>Completed</th>
+              <th>In Progress</th>
+              <th>Other Status</th>
+            </tr>
+          </thead>
+          <tbody id="assigneeSummaryBody"></tbody>
+        </table>
+      </div>
+    </section>
 
     <!-- Month Filter -->
     <div class="month-filter">
@@ -61,7 +111,7 @@
         <div id="completedByTypeLegend" class="custom-legend"></div>
       </div>
       <div class="chart-container">
-        <h3>Intakes Completed</h3>
+        <h3>Intakes by Status</h3>
         <canvas id="intakesCompletedChart"></canvas>
       </div>
     </div>
@@ -74,7 +124,7 @@
         <div id="progressDistributionLegend" class="custom-legend"></div>
       </div>
       <div class="chart-container">
-        <h3>� Components Distribution</h3>
+        <h3>Components Distribution</h3>
         <canvas id="componentsDistributionChart"></canvas>
         <div id="componentsDistributionLegend" class="custom-legend"></div>
       </div>
@@ -82,26 +132,26 @@
 
     <!-- CSV Upload Section -->
     <div class="csv-upload-section">
-      <h2>Jira Issues Data</h2>
+      <h2>Workfront Tasks Data</h2>
       <div class="upload-container">
-        <label for="csvFile">Upload Jira Issues CSV File:</label>
+        <label for="csvFile">Upload Workfront Tasks CSV File:</label>
         <input type="file" id="csvFile" accept=".csv" onchange="handleCSVUpload(event)">
-        <small>Expected columns: Issue Key, Summary, Status, Priority, Assignee, Created, Updated</small>
+        <small>Required: Task ID, Name. Supported: Status, Priority, Assignee, Created Date, Updated Date. Optional: Request Type, Component.</small>
         <div id="uploadError" class="error-message"></div>
       </div>
 
-      <!-- Jira Issues Table -->
-      <div class="jira-table-section">
-        <h3>Jira Issues List</h3>
+      <!-- Workfront Tasks Table -->
+      <div class="workfront-table-section">
+        <h3>Workfront Tasks List</h3>
         <div class="table-controls">
-          <input type="text" id="searchJira" placeholder="Search issues..." onkeyup="filterJiraTable()">
-          <button onclick="exportJiraData()">Export</button>
+          <input type="text" id="searchWorkfront" placeholder="Search tasks..." oninput="filterWorkfrontTable()">
+          <button onclick="exportWorkfrontData()">Export</button>
         </div>
-        <table id="jiraTable">
+        <table id="workfrontTable">
           <thead>
             <tr>
-              <th>Issue Key</th>
-              <th>Summary</th>
+              <th>Task ID</th>
+              <th>Name</th>
               <th>Status</th>
               <th>Priority</th>
               <th>Assignee</th>
@@ -110,7 +160,7 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Jira issues will be populated here -->
+            <!-- Workfront tasks will be populated here -->
           </tbody>
         </table>
       </div>

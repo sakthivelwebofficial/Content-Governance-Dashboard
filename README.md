@@ -1,45 +1,35 @@
 # Content Governance Dashboard
 
-A comprehensive content management tool with data governance, filtering, and component management capabilities.
+A browser-based dashboard for tracking content expiry, reviewing Workfront intake data, and using text utilities.
 
 ## Features
 
-- **Dashboard** - View and manage content records with real-time editing
-- **Date Range Filtering** - Filter records by expiry date
-- **Data Export** - Export filtered or all records as CSV
-- **Components Management** - Create and maintain a library of reusable UI components
-- **User Authentication** - Secure login system (Admin/admin)
-- **Local Storage** - Data persists in browser storage
+- Content Tracking dashboard records with expiry filtering, charts, CSV export, and automatic local saving
+- MPR Deck CSV import, all-data and month views, leadership KPIs, assignee workload, charts, search, and export
+- Snake Case Converter, Text Compare, and URL Decoder/Encoder utilities
+- Browser localStorage persistence
 
-## Login Credentials
+## Login
 
-- **Username:** Admin
-- **Password:** admin
-
-## How to Access
-
-This application is deployed on GitHub Pages and accessible at:
-`https://[your-username].github.io/manual-table-dashboard/`
+- Username: `Admin`
+- Password: `admin`
 
 ## Local Development
 
-To run locally:
+Run locally with:
+
 ```bash
 python -m http.server 8000
 ```
-Then open: `http://localhost:8000/login.html`
 
-## Files
+Then open `http://localhost:8000/login.html`.
 
-- `login.html` - Login page
-- `index.html` - Dashboard with data management
-- `components.html` - Component library management
-- `about.html` - About and help page
-- `app.js` - Dashboard functionality
-- `components.js` - Components page functionality
-- `login.js` - Login functionality
-- `style.css` - All styling
+## Main Files
 
-## Data Storage
-
-All data is stored in the browser's localStorage and persists across sessions.
+- `index.html` / `app.js` - Dashboard
+- `mpr-deck.html` / `mpr-deck.js` - MPR Deck
+- `snake-case.html` / `snake-case.js` - Snake Case Converter
+- `text-compare.html` / `text-compare.js` - Text Compare
+- `url-encoder.html` / `url-encoder.js` - URL Decoder/Encoder
+- `login.html` / `login.js` - Login
+- `style.css` - Shared styling

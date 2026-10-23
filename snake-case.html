@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Snake Case Converter - Content Ops</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <div class="brand-icon">⚙️</div>
+        <span class="brand-text">Content Ops</span>
+      </div>
+      <ul class="navbar-menu">
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="mpr-deck.html">MPR Deck</a></li>
+        <li><a href="snake-case.html" class="active">Snake Case</a></li>
+        <li><a href="text-compare.html">Text Compare</a></li>
+        <li><a href="url-encoder.html">URL Encoder</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="navbar-right">
+        <span>Text Tools</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container tool-container snake-tool">
+    <h1 class="tool-heading">Snake Case Converter</h1>
+    <p class="tool-subtitle">Turn text into lowercase words joined by underscores.</p>
+    <section class="snake-panel" aria-label="Snake case converter">
+      <div class="snake-field">
+        <label for="snakeInput">Text to convert</label>
+        <textarea id="snakeInput" placeholder="Paste or type your text here" spellcheck="false"></textarea>
+      </div>
+      <div class="snake-actions">
+        <button id="convertButton" type="button">Convert</button>
+        <button id="copyButton" class="secondary-action" type="button" title="Copy converted text" aria-label="Copy converted text">Copy</button>
+      </div>
+      <div class="snake-field">
+        <label for="snakeOutput">snake_case</label>
+        <input id="snakeOutput" type="text" readonly>
+      </div>
+      <p id="snakeStatus" class="snake-status" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+  <script src="snake-case.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Text Compare - Content Ops</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <div class="brand-icon">⚙️</div>
+        <span class="brand-text">Content Ops</span>
+      </div>
+      <ul class="navbar-menu">
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="mpr-deck.html">MPR Deck</a></li>
+        <li><a href="snake-case.html">Snake Case</a></li>
+        <li><a href="text-compare.html" class="active">Text Compare</a></li>
+        <li><a href="url-encoder.html">URL Encoder</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="navbar-right">
+        <span>Text Tools</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container tool-container">
+    <h1 class="tool-heading">Text Compare</h1>
+    <p class="tool-subtitle">Compare two versions and scan their line-by-line changes.</p>
+
+    <section class="compare-editors" aria-label="Texts to compare">
+      <div class="compare-editor">
+        <label for="originalText">Original text</label>
+        <textarea id="originalText" spellcheck="false" placeholder="Paste the original text here"></textarea>
+      </div>
+      <div class="compare-editor">
+        <label for="revisedText">Revised text</label>
+        <textarea id="revisedText" spellcheck="false" placeholder="Paste the revised text here"></textarea>
+      </div>
+    </section>
+
+    <div class="compare-actions" aria-label="Comparison controls">
+      <button id="editTextsButton" class="secondary-action" type="button" title="Focus the text editors">Edit texts</button>
+      <button id="switchTextsButton" class="secondary-action" type="button" title="Swap the two texts" aria-label="Switch texts">Switch texts</button>
+      <button id="compareButton" type="button">Compare!</button>
+      <button id="clearTextsButton" class="secondary-action" type="button">Clear all</button>
+    </div>
+
+    <section class="compare-result" aria-labelledby="resultTitle">
+      <div class="compare-result-header">
+        <h2 id="resultTitle">Differences</h2>
+        <span id="compareSummary" class="compare-summary" role="status" aria-live="polite">Add text to compare.</span>
+      </div>
+      <p id="compareEmpty" class="compare-empty">Your line-by-line comparison will appear here.</p>
+      <div id="diffTableWrap" class="diff-table-wrap" hidden>
+        <table class="diff-table" aria-label="Line-by-line text differences">
+          <thead>
+            <tr><th colspan="2">Original</th><th colspan="2">Revised</th></tr>
+          </thead>
+          <tbody id="diffRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="text-compare.js"></script>
+</body>
+</html>

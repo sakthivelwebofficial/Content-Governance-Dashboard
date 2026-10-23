@@ -28,6 +28,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
   padding: 10px 20px;
   max-width: 100%;
   margin: 0 auto;
@@ -72,11 +74,12 @@ body {
 .navbar-menu {
   display: flex;
   list-style: none;
-  gap: 25px;
+  gap: 8px;
   margin: 0;
   padding: 0;
-  flex: 1;
-  margin-left: 30px;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  margin-left: 10px;
 }
 
 .navbar-menu li a {
@@ -86,6 +89,7 @@ body {
   padding: 5px 10px;
   border-radius: 4px;
   transition: all 0.3s;
+  white-space: nowrap;
 }
 
 .navbar-menu li a:hover,
@@ -99,6 +103,37 @@ body {
   align-items: center;
   gap: 20px;
   white-space: nowrap;
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .navbar-container {
+    justify-content: center;
+  }
+
+  .navbar-menu {
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .navbar-right {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .navbar-container {
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .navbar-menu {
+    width: 100%;
+  }
+
+  .navbar-right {
+    justify-content: center;
+  }
 }
 
 .navbar-right span {
@@ -126,6 +161,41 @@ h1 {
 
 .controls {
   margin-bottom: 15px;
+}
+
+.workfront-link-setting {
+  display: grid;
+  grid-template-columns: max-content minmax(220px, 1fr);
+  align-items: center;
+  gap: 8px 12px;
+  max-width: 760px;
+  margin: 0 0 18px;
+  color: #a0c9ff;
+  font-size: 13px;
+}
+
+.workfront-link-setting label {
+  color: #d9eaf0;
+  font-weight: 600;
+}
+
+.workfront-link-setting input {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #4f6f7a;
+  border-radius: 3px;
+  background: #102b33;
+  color: #fff;
+}
+
+.workfront-link-setting input:focus {
+  outline: none;
+  border-color: #65c2b5;
+}
+
+.workfront-link-setting span {
+  grid-column: 2;
+  font-size: 12px;
 }
 
 button {
@@ -211,6 +281,11 @@ button {
   padding: 20px;
   border-radius: 5px;
   border: 1px solid #2f5a68;
+  overflow-x: auto;
+}
+
+.table-section table {
+  min-width: 850px;
 }
 
 .table-section h3 {
@@ -354,6 +429,11 @@ tr.hidden {
   padding: 20px;
   border-radius: 5px;
   border: 1px solid #2f5a68;
+  overflow-x: auto;
+}
+
+#componentsTable {
+  min-width: 700px;
 }
 
 .components-list h3 {
@@ -543,6 +623,41 @@ tr.hidden {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
+.leadership-summary {
+  margin: 20px 0 30px;
+  padding: 20px;
+  border: 1px solid #2f5a68;
+  border-radius: 5px;
+  background: #1a3d47;
+}
+
+.leadership-summary > h2 {
+  margin: 0 0 16px;
+  color: #a0c9ff;
+  font-size: 20px;
+}
+
+.leadership-kpis {
+  margin-bottom: 24px;
+}
+
+.leadership-kpis .stat-card {
+  min-width: 130px;
+  padding: 14px;
+}
+
+.leadership-kpis .stat-value {
+  font-size: 28px;
+}
+
+.assignee-summary-section {
+  margin-top: 0;
+}
+
+#assigneeSummaryTable {
+  min-width: 600px;
+}
+
 .stat-label {
   color: #a0c9ff;
   font-size: 12px;
@@ -661,11 +776,16 @@ tr.hidden {
   margin-top: 5px;
 }
 
-.jira-table-section {
+.workfront-table-section {
   margin-top: 20px;
+  overflow-x: auto;
 }
 
-.jira-table-section h3 {
+#workfrontTable {
+  min-width: 640px;
+}
+
+.workfront-table-section h3 {
   color: #1f6fd6;
   margin-bottom: 15px;
 }
@@ -709,7 +829,7 @@ tr.hidden {
   background: #1a5ab8;
 }
 
-#jiraTable {
+#workfrontTable {
   width: 100%;
   border-collapse: collapse;
   background: #102b33;
@@ -718,12 +838,12 @@ tr.hidden {
   overflow: hidden;
 }
 
-#jiraTable thead {
+#workfrontTable thead {
   background: #0a1f28;
   border-bottom: 2px solid #1f6fd6;
 }
 
-#jiraTable th {
+#workfrontTable th {
   color: #1f6fd6;
   padding: 12px;
   text-align: left;
@@ -732,11 +852,11 @@ tr.hidden {
   border-right: 1px solid #2f5a68;
 }
 
-#jiraTable th:last-child {
+#workfrontTable th:last-child {
   border-right: none;
 }
 
-#jiraTable td {
+#workfrontTable td {
   color: white;
   padding: 10px 12px;
   border-bottom: 1px solid #2f5a68;
@@ -744,11 +864,11 @@ tr.hidden {
   font-size: 12px;
 }
 
-#jiraTable td:last-child {
+#workfrontTable td:last-child {
   border-right: none;
 }
 
-#jiraTable tbody tr:hover {
+#workfrontTable tbody tr:hover {
   background: #1a3d47;
 }
 
@@ -788,4 +908,255 @@ tr.hidden {
 .status-pending {
   background: #3d4a5a;
   color: #a0c9ff;
+}
+
+.tool-container {
+  max-width: 1320px;
+}
+
+.tool-heading {
+  margin: 12px 0 6px;
+  text-align: left;
+  font-size: 30px;
+}
+
+.tool-subtitle {
+  margin: 0 0 26px;
+  color: #a0c9ff;
+  line-height: 1.5;
+}
+
+.compare-editors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.compare-editor {
+  min-width: 0;
+}
+
+.compare-editor label,
+.snake-field label {
+  display: block;
+  margin-bottom: 8px;
+  color: #d9eaf0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.compare-editor textarea,
+.snake-field textarea,
+.snake-field input {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #4f6f7a;
+  border-radius: 4px;
+  background: #102b33;
+  color: #f4fbfd;
+  font: 13px/1.55 Consolas, "SFMono-Regular", monospace;
+  padding: 12px;
+}
+
+.compare-editor textarea {
+  min-height: 280px;
+  resize: vertical;
+  tab-size: 2;
+}
+
+.compare-editor textarea:focus,
+.snake-field textarea:focus,
+.snake-field input:focus {
+  outline: 2px solid #65c2b5;
+  outline-offset: 1px;
+}
+
+.compare-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 24px;
+}
+
+.compare-actions button,
+.snake-actions button {
+  min-height: 40px;
+  margin: 0;
+  border-radius: 3px;
+}
+
+.compare-actions .secondary-action,
+.snake-actions .secondary-action {
+  background: #244a56;
+  border: 1px solid #4f6f7a;
+}
+
+.compare-result {
+  overflow: hidden;
+  border: 1px solid #2f5a68;
+  border-radius: 4px;
+  background: #102b33;
+}
+
+.compare-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #2f5a68;
+  color: #d9eaf0;
+}
+
+.compare-result-header h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.compare-summary {
+  color: #a0c9ff;
+  font-size: 12px;
+}
+
+.compare-empty {
+  margin: 0;
+  padding: 30px 16px;
+  color: #a0c9ff;
+  text-align: center;
+}
+
+.diff-table-wrap {
+  overflow-x: auto;
+}
+
+.diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font: 12px/1.5 Consolas, "SFMono-Regular", monospace;
+}
+
+.diff-table td {
+  padding: 3px 10px;
+  border: 0;
+  border-bottom: 1px solid rgba(79, 111, 122, 0.38);
+  vertical-align: top;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.diff-table .line-number {
+  width: 42px;
+  padding-right: 8px;
+  color: #83a6af;
+  text-align: right;
+  user-select: none;
+}
+
+.diff-table .diff-code {
+  width: calc(50% - 42px);
+}
+
+.diff-table .removed {
+  background: rgba(211, 89, 78, 0.2);
+  color: #ffc0b8;
+}
+
+.diff-table .added {
+  background: rgba(55, 153, 112, 0.22);
+  color: #a8f0cb;
+}
+
+.diff-table .unchanged {
+  color: #d6e4e7;
+}
+
+.snake-tool {
+  max-width: 820px;
+}
+
+.snake-panel {
+  padding: 20px;
+  border: 1px solid #2f5a68;
+  border-radius: 4px;
+  background: #1a3d47;
+}
+
+.snake-field + .snake-field {
+  margin-top: 18px;
+}
+
+.snake-field textarea {
+  min-height: 160px;
+  resize: vertical;
+}
+
+.snake-field input {
+  min-height: 42px;
+}
+
+.snake-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.snake-status {
+  min-height: 20px;
+  margin: 12px 0 0;
+  color: #a8f0cb;
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .workfront-link-setting {
+    grid-template-columns: 1fr;
+  }
+
+  .workfront-link-setting span {
+    grid-column: 1;
+  }
+
+  .charts-container {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .container.tool-container {
+    padding: 16px;
+  }
+
+  .tool-heading {
+    font-size: 25px;
+  }
+
+  .compare-editors {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-editor textarea {
+    min-height: 200px;
+  }
+
+  .compare-actions {
+    justify-content: stretch;
+  }
+
+  .compare-actions button {
+    flex: 1 1 42%;
+  }
+
+  .compare-result-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .diff-table {
+    min-width: 640px;
+  }
+
+  .snake-panel {
+    padding: 16px;
+  }
 }

@@ -2,7 +2,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Content Governance Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Content Tracking Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -15,8 +16,10 @@
       </div>
       <ul class="navbar-menu">
         <li><a href="index.html" class="active">Dashboard</a></li>
-        <li><a href="components.html">Components</a></li>
         <li><a href="mpr-deck.html">MPR Deck</a></li>
+        <li><a href="snake-case.html">Snake Case</a></li>
+        <li><a href="text-compare.html">Text Compare</a></li>
+        <li><a href="url-encoder.html">URL Encoder</a></li>
         <li><a href="about.html">About</a></li>
       </ul>
       <div class="navbar-right">
@@ -27,13 +30,19 @@
   </nav>
 
   <div class="container">
-    <h1>Content Governance Dashboard</h1>
+    <h1>Content Tracking Dashboard</h1>
 
     <div class="controls">
     <button onclick="addRow()">Add Row</button>
     <button onclick="saveData()">Save (Local)</button>
     <button onclick="exportData()">Export</button>
   </div>
+
+    <section class="workfront-link-setting" aria-label="Workfront link settings">
+      <label for="workfrontUrlTemplate">Workfront URL pattern</label>
+      <input id="workfrontUrlTemplate" type="text" placeholder="https://your-workfront-site/.../{id}" autocomplete="off">
+      <span id="workfrontUrlStatus" role="status" aria-live="polite">Use {id} where the ticket ID belongs.</span>
+    </section>
 
   <div class="filter-section">
     <h3>Filter by Expiry Date</h3>
@@ -86,7 +95,6 @@
           <th>Type</th>
           <th>Team</th>
           <th>Placement</th>
-          <th>Membership</th>
           <th>Workfront</th>
           <th>Expiry Date</th>
           <th>Delete</th>

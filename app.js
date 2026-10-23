@@ -54,6 +54,7 @@ const dummyData = [
 
 // Global variable
 let tbody;
+let workfrontUrlTemplate = '';
 
 // Check login status
 window.addEventListener('load', () => {
@@ -72,16 +73,56 @@ window.addEventListener('load', () => {
   
   // Initialize tbody and load data
   tbody = document.querySelector('#grid tbody');
-  
-  // Load data with placement and membership
-  dummyData.forEach(addRowWithData);
+
+  if (!tbody) return;
+  const workfrontUrlInput = document.getElementById('workfrontUrlTemplate');
+  workfrontUrlTemplate = localStorage.getItem('workfrontUrlTemplate') || '';
+  workfrontUrlInput.value = workfrontUrlTemplate;
+  workfrontUrlInput.addEventListener('input', () => {
+    workfrontUrlTemplate = workfrontUrlInput.value.trim();
+    localStorage.setItem('workfrontUrlTemplate', workfrontUrlTemplate);
+    updateWorkfrontLinks();
+  });
+
+  tbody.addEventListener('input', () => {
+    updateCharts();
+    saveData(false);
+  });
+  tbody.addEventListener('focusout', event => {
+    const cell = event.target.closest('td');
+    if (cell && cell.cellIndex === 5) renderWorkfrontLink(cell);
+  });
+
+  let initialData = dummyData;
+  const savedData = localStorage.getItem('contentData');
+  if (savedData !== null) {
+    try {
+      const parsedData = JSON.parse(savedData);
+      if (Array.isArray(parsedData)) {
+        initialData = parsedData.map(record => ({
+          rec: record.rec ?? record.rec_id ?? '',
+          title: record.title ?? '',
+          type: record.type ?? '',
+          team: record.team ?? '',
+          placement: record.placement ?? '',
+          wf: record.wf ?? record.workfront ?? '',
+          expiry: record.expiry ?? record.expiry_date ?? ''
+        }));
+      }
+    } catch (error) {
+      console.error('Unable to load saved content data:', error);
+    }
+  }
+
+  initialData.forEach(record => addRowWithData(record, false));
   
   // Initialize charts
   setTimeout(initializeCharts, 100);
 });
 
 function addRow() {
-  addRowWithData({rec:'', title:'', type:'', team:'', placement:'', membership:'', wf:'', expiry:''});
+  addRowWithData({rec:'', title:'', type:'', team:'', placement:'', wf:'', expiry:''});
+  saveData(false);
 }
 
 // Chart instances
@@ -93,29 +134,88 @@ function initializeCharts() {
   updateCharts();
 }
 
-function addRowWithData(d) {
+function addRowWithData(d, shouldUpdateCharts = true) {
   const row = document.createElement('tr');
-  row.innerHTML = `
-    <td contenteditable="true">${d.rec}</td>
-    <td contenteditable="true">${d.title}</td>
-    <td contenteditable="true">${d.type}</td>
-    <td contenteditable="true">${d.team}</td>
-    <td contenteditable="true">${d.placement}</td>
-    <td contenteditable="true">${d.membership}</td>
-    <td contenteditable="true">${d.wf}</td>
-    <td contenteditable="true">${d.expiry}</td>
-    <td><button onclick="deleteRow(this)">X</button></td>
-  `;
+  [d.rec, d.title, d.type, d.team, d.placement, d.wf, d.expiry].forEach(value => {
+    const cell = document.createElement('td');
+    cell.contentEditable = 'true';
+    cell.textContent = value ?? '';
+    row.appendChild(cell);
+  });
+  renderWorkfrontLink(row.cells[5]);
+
+  const actionCell = document.createElement('td');
+  const deleteButton = document.createElement('button');
+  deleteButton.textContent = 'X';
+  deleteButton.addEventListener('click', () => deleteRow(deleteButton));
+  actionCell.appendChild(deleteButton);
+  row.appendChild(actionCell);
   tbody.appendChild(row);
-  updateCharts();
+
+  if (shouldUpdateCharts) updateCharts();
+}
+
+function getWorkfrontHref(value) {
+  const ticket = (value || '').trim();
+  if (!ticket) return '';
+
+  let href = ticket;
+  try {
+    const directUrl = new URL(href);
+    if (directUrl.protocol === 'http:' || directUrl.protocol === 'https:') return directUrl.href;
+  } catch {
+    // The cell contains a ticket ID, not a full URL.
+  }
+
+  if (!workfrontUrlTemplate.includes('{id}') && !workfrontUrlTemplate.includes('{{id}}')) return '';
+  href = workfrontUrlTemplate
+    .replaceAll('{{id}}', encodeURIComponent(ticket))
+    .replaceAll('{id}', encodeURIComponent(ticket));
+
+  try {
+    const parsedUrl = new URL(href);
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:' ? parsedUrl.href : '';
+  } catch {
+    return '';
+  }
+}
+
+function renderWorkfrontLink(cell) {
+  if (!cell) return;
+  const ticket = cell.textContent.trim();
+  const href = getWorkfrontHref(ticket);
+  cell.replaceChildren();
+
+  if (!href) {
+    cell.textContent = ticket;
+    return;
+  }
+
+  const link = document.createElement('a');
+  link.href = href;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = ticket;
+  cell.appendChild(link);
+}
+
+function updateWorkfrontLinks() {
+  document.querySelectorAll('#grid tbody tr').forEach(row => renderWorkfrontLink(row.cells[5]));
+  const status = document.getElementById('workfrontUrlStatus');
+  if (workfrontUrlTemplate && !workfrontUrlTemplate.includes('{id}') && !workfrontUrlTemplate.includes('{{id}}')) {
+    status.textContent = 'Add {id} to the URL pattern to link ticket IDs.';
+  } else {
+    status.textContent = 'Ticket IDs open in a new tab; direct URLs in a cell are used as-is.';
+  }
 }
 
 function deleteRow(btn) {
   btn.parentElement.parentElement.remove();
   updateCharts();
+  saveData(false);
 }
 
-function saveData() {
+function saveData(showConfirmation = true) {
   const rows = [...tbody.querySelectorAll('tr')];
   const result = rows.map(r => {
     const c = r.querySelectorAll('td');
@@ -125,25 +225,24 @@ function saveData() {
       type: c[2].innerText,
       team: c[3].innerText,
       placement: c[4].innerText,
-      membership: c[5].innerText,
-      workfront: c[6].innerText,
-      expiry: c[7].innerText
+      workfront: c[5].innerText,
+      expiry: c[6].innerText
     };
   });
   localStorage.setItem('contentData', JSON.stringify(result, null, 2));
-  alert('Data saved locally (simulate DB save).');
+  if (showConfirmation) alert('Data saved locally.');
 }
 
 function exportData() {
   const rows = [...tbody.querySelectorAll('tr')];
   const csvData = rows.map(r => {
     const c = r.querySelectorAll('td');
-    const values = [c[0].innerText, c[1].innerText, c[2].innerText, c[3].innerText, c[4].innerText, c[5].innerText, c[6].innerText, c[7].innerText];
+    const values = [c[0].innerText, c[1].innerText, c[2].innerText, c[3].innerText, c[4].innerText, c[5].innerText, c[6].innerText];
     return values.map(v => `"${v.replace(/"/g, '""')}"`).join(',');
   });
   
   // Add header row
-  const header = '"REC ID","Title","Type","Team","Placement","Membership","Workfront","Expiry Date"';
+  const header = '"REC ID","Title","Type","Team","Placement","Workfront","Expiry Date"';
   const csv = header + '\n' + csvData.join('\n');
   
   // Create blob and download
@@ -170,7 +269,7 @@ function applyFilter() {
   const rows = [...tbody.querySelectorAll('tr')];
   rows.forEach(row => {
     const cells = row.querySelectorAll('td');
-    const expiryDate = cells[7].innerText;
+    const expiryDate = cells[6].innerText;
     
     let isInRange = true;
     if (startDate && expiryDate < startDate) {
@@ -207,8 +306,8 @@ function updateCharts() {
   rows.forEach(row => {
     const cells = row.querySelectorAll('td');
     if (cells.length >= 8) {
-      // Column indices: 0=REC ID, 1=Title, 2=Type, 3=Team, 4=Placement, 5=Membership, 6=Workfront, 7=Expiry Date
-      const expiry = cells[7].innerText;
+      // Column indices: 0=REC ID, 1=Title, 2=Type, 3=Team, 4=Placement, 5=Workfront, 6=Expiry Date
+      const expiry = cells[6].innerText;
       const team = cells[3].innerText;
       const type = cells[2].innerText;
       

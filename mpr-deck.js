@@ -1,6 +1,6 @@
 // Global variables
-let jiraData = [];
-let filteredJiraData = [];
+let workfrontData = [];
+let filteredWorkfrontData = [];
 let chartsInitialized = false;
 let completedByTypeChart = null;
 let intakesCompletedChart = null;
@@ -37,7 +37,7 @@ function createCustomLegend(legendId, labels, colors, values) {
 }
 
 // Check login status
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
   const isLoggedIn = localStorage.getItem('isLoggedIn');
   if (!isLoggedIn) {
     window.location.href = 'login.html';
@@ -56,13 +56,27 @@ window.addEventListener('load', () => {
   currentMonth = now.getMonth();
   currentYear = now.getFullYear();
 
-  // Load saved Jira data if exists, otherwise load default
-  const saved = localStorage.getItem('jiraData');
+  // Prefer the localStorage copy when available, with IndexedDB as the large-file store.
+  const saved = localStorage.getItem('workfrontData');
   if (saved) {
-    jiraData = JSON.parse(saved);
+    try {
+      const parsedData = JSON.parse(saved);
+      workfrontData = Array.isArray(parsedData) ? parsedData : [];
+    } catch (error) {
+      workfrontData = [];
+      const uploadError = document.getElementById('uploadError');
+      uploadError.textContent = 'Saved Workfront data could not be read. Upload a valid CSV to replace it.';
+      uploadError.style.display = 'block';
+    }
   } else {
-    // Pre-load with demo data - will be replaced when CSV is uploaded
-    jiraData = [];
+    try {
+      workfrontData = await loadWorkfrontDataFromDatabase() || [];
+    } catch (error) {
+      workfrontData = [];
+      const uploadError = document.getElementById('uploadError');
+      uploadError.textContent = 'Saved Workfront data could not be loaded from browser storage.';
+      uploadError.style.display = 'block';
+    }
   }
 
   // Populate month selector
@@ -83,42 +97,35 @@ function handleCSVUpload(event) {
   }
 
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
     try {
       const csv = e.target.result;
-      const lines = csv.trim().split('\n');
-      
-      if (lines.length < 2) {
-        errorDiv.style.display = 'block';
-        errorDiv.textContent = 'Error: CSV file must contain headers and at least one data row';
-        errorDiv.style.color = '#ff6b6b';
-        return;
-      }
+      workfrontData = parseCSV(csv);
 
-      // Parse CSV
-      jiraData = parseCSV(lines);
-      
-      if (jiraData.length === 0) {
+      if (workfrontData.length === 0) {
         errorDiv.style.display = 'block';
         errorDiv.textContent = 'Error: Could not parse CSV file. Check your file format.';
         errorDiv.style.color = '#ff6b6b';
         return;
       }
 
-      // Save to localStorage
-      localStorage.setItem('jiraData', JSON.stringify(jiraData));
-
-      // Re-apply filters with new data
+      const saveResult = await saveWorkfrontDataToStorage(workfrontData);
+      populateMonthSelector();
       applyMonthFilter();
       
-      // Success message
-      errorDiv.style.display = 'block';
-      errorDiv.textContent = `Successfully loaded ${jiraData.length} Jira issues. Showing ${filteredJiraData.length} issues for current view.`;
-      errorDiv.style.color = '#51cf66';
+      if (!saveResult.success) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = `Loaded ${workfrontData.length} tasks for this session, but they could not be saved for a future visit. ${saveResult.message}`;
+        errorDiv.style.color = '#ffa800';
+      } else {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = `✓ Loaded ${saveResult.recordsStored} Workfront tasks (${saveResult.storageSizeMB} MB). Showing ${filteredWorkfrontData.length} tasks in this view. ${saveResult.message}`;
+        errorDiv.style.color = '#51cf66';
+      }
       
       setTimeout(() => {
         errorDiv.style.display = 'none';
-      }, 3000);
+      }, 4000);
     } catch (error) {
       errorDiv.style.display = 'block';
       errorDiv.textContent = `Error: ${error.message}`;
@@ -128,25 +135,135 @@ function handleCSVUpload(event) {
   reader.readAsText(file);
 }
 
-function parseCSV(lines) {
-  // Parse header with proper quoted field handling
-  const headerLine = lines[0];
-  const headers = [];
-  let current = '';
-  let inQuotes = false;
-  
-  for (let i = 0; i < headerLine.length; i++) {
-    const char = headerLine[i];
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
-      headers.push(current.trim().toLowerCase().replace(/^\"|\"$/g, ''));
-      current = '';
-    } else {
-      current += char;
+function openWorkfrontDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('workfront-data', 1);
+
+    request.onupgradeneeded = () => {
+      request.result.createObjectStore('datasets');
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function loadWorkfrontDataFromDatabase() {
+  const database = await openWorkfrontDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction('datasets', 'readonly');
+    const request = transaction.objectStore('datasets').get('current');
+
+    request.onsuccess = () => {
+      database.close();
+      resolve(request.result ?? null);
+    };
+    request.onerror = () => {
+      database.close();
+      reject(request.error);
+    };
+  });
+}
+
+async function saveWorkfrontDataToDatabase(data) {
+  const database = await openWorkfrontDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction('datasets', 'readwrite');
+    transaction.objectStore('datasets').put(data, 'current');
+
+    transaction.oncomplete = () => {
+      database.close();
+      resolve();
+    };
+    transaction.onerror = () => {
+      database.close();
+      reject(transaction.error);
+    };
+    transaction.onabort = () => {
+      database.close();
+      reject(transaction.error || new Error('Browser storage transaction was aborted.'));
+    };
+  });
+}
+
+function saveWorkfrontDataToStorage(data) {
+  const maxSizeInBytes = 3048576;
+  const jsonStr = JSON.stringify(data);
+  const sizeInBytes = new Blob([jsonStr]).size;
+  const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
+
+  if (sizeInBytes <= maxSizeInBytes) {
+    try {
+      localStorage.setItem('workfrontData', jsonStr);
+      return Promise.resolve({
+        success: true,
+        recordsStored: data.length,
+        storageSizeMB: sizeInMB,
+        message: `Saved all ${data.length} records in browser storage.`
+      });
+    } catch {
+      // Fall through to IndexedDB when localStorage is full or unavailable.
     }
   }
-  headers.push(current.trim().toLowerCase().replace(/^\"|\"$/g, ''));
+
+  return saveWorkfrontDataToDatabase(data).then(() => {
+    localStorage.removeItem('workfrontData');
+    return {
+      success: true,
+      recordsStored: data.length,
+      storageSizeMB: sizeInMB,
+      message: `Saved all ${data.length} records in the browser database.`
+    };
+  }).catch(error => ({
+    success: false,
+    recordsStored: 0,
+    storageSizeMB: sizeInMB,
+    message: `Browser storage failed: ${error.message}`
+  }));
+}
+
+function parseCSV(csvText) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+
+  for (let index = 0; index < csvText.length; index += 1) {
+    const char = csvText[index];
+
+    if (char === '"') {
+      if (inQuotes && csvText[index + 1] === '"') {
+        field += '"';
+        index += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      row.push(field.trim());
+      field = '';
+    } else if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (char === '\r' && csvText[index + 1] === '\n') index += 1;
+      row.push(field.trim());
+      if (row.some(value => value !== '')) rows.push(row);
+      row = [];
+      field = '';
+    } else if ((char === '\n' || char === '\r') && inQuotes) {
+      if (char === '\r' && csvText[index + 1] === '\n') index += 1;
+      field += '\n';
+    } else {
+      field += char;
+    }
+  }
+
+  if (inQuotes) throw new Error('CSV contains an unclosed quoted field.');
+  row.push(field.trim());
+  if (row.some(value => value !== '')) rows.push(row);
+  if (rows.length < 2) throw new Error('CSV file must contain headers and at least one data row.');
+
+  const headers = rows[0].map((header, index) =>
+    (index === 0 ? header.replace(/^\uFEFF/, '') : header).toLowerCase().trim()
+  );
   
   // Find column indices - look for exact match first
   const findIndex = (searchTerms) => {
@@ -162,40 +279,53 @@ function parseCSV(lines) {
     return -1;
   };
   
-  // Required column indices
-  const keyIndex = findIndex(['issue key', 'issue key']);
-  const summaryIndex = findIndex(['summary']);
-  const statusIndex = findIndex(['status']);
-  const priorityIndex = findIndex(['priority']);
-  const assigneeIndex = findIndex(['assignee']);
-  const createdIndex = findIndex(['created']);
-  const updatedIndex = findIndex(['updated']);
-  const issueTypeIndex = findIndex(['issue type']);
-  const projectIndex = findIndex(['project name']);
-  // Component column - look for 'component' with or without 's', and also handle 'component/s'
+  // Required column indices - support multiple column name variations
+  const idHeaders = ['task id', 'ticket id', 'issue id', 'entry id', 'task key', 'issue key', 'id'];
+  const idIndex = headers.findIndex(header => idHeaders.includes(header));
+  const nameIndex = findIndex(['name', 'task name', 'summary', 'title']);
+  if (nameIndex < 0) {
+    throw new Error('CSV must include a Name column.');
+  }
+  const statusIndex = findIndex(['status', 'content status']);
+  const priorityIndex = findIndex(['priority', 'request type', 'type']);
+  const assigneeIndex = findIndex(['assignee', 'assigned to', 'assignments', 'owner']);
+  const createdIndex = findIndex(['entry', 'created', 'created date', 'entry date', 'requested go-live date', 'requested']);
+  const updatedIndex = findIndex(['updated', 'updated date', 'last modified', 'published date']);
+  const taskTypeIndex = findIndex(['request type', 'task type', 'type']);
+  const projectIndex = findIndex(['project', 'project name', 'team']);
+  // Component column - look for 'component' with or without 's'
   const componentIndex = findIndex(['component/s', 'component', 'components']);
 
   const data = [];
   
-  // Parse data rows
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
+  for (let i = 1; i < rows.length; i++) {
+    const values = rows[i];
+    if (values.some(value => value !== '')) {
+      // Extract assignee name from complex assignment field
+      let assigneeValue = assigneeIndex >= 0 ? values[assigneeIndex] : '';
+      if (assigneeValue) {
+        const assignment = assigneeValue.trim();
+        if (/^team\s*:/i.test(assignment)) {
+          assigneeValue = 'Team Assignment';
+        } else if (/^job role\s*:/i.test(assignment)) {
+          assigneeValue = 'Unassigned';
+        } else {
+          const person = assignment.match(/^(.+?)(?=,\s*(?:Team|Job Role)\s*:|$)/i);
+          assigneeValue = person ? person[1].trim() : 'Unassigned';
+        }
+      }
 
-    const values = parseCSVLine(line);
-    
-    if (values.length > 0) {
       data.push({
-        key: keyIndex >= 0 ? values[keyIndex] : '',
-        summary: summaryIndex >= 0 ? values[summaryIndex] : '',
-        status: statusIndex >= 0 ? values[statusIndex] : '',
-        priority: priorityIndex >= 0 ? values[priorityIndex] : '',
-        assignee: assigneeIndex >= 0 ? values[assigneeIndex] : '',
-        created: createdIndex >= 0 ? values[createdIndex] : '',
-        updated: updatedIndex >= 0 ? values[updatedIndex] : '',
-        issueType: issueTypeIndex >= 0 ? values[issueTypeIndex] : '',
-        project: projectIndex >= 0 ? values[projectIndex] : '',
-        component: componentIndex >= 0 ? values[componentIndex] : ''
+        id: idIndex >= 0 && values[idIndex] ? values[idIndex] : `ROW-${i}`,
+        name: values[nameIndex] || '',
+        status: statusIndex >= 0 ? values[statusIndex] || '' : '',
+        priority: priorityIndex >= 0 ? values[priorityIndex] || '' : '',
+        assignee: assigneeValue || '',
+        created: createdIndex >= 0 ? values[createdIndex] || '' : new Date().toISOString().split('T')[0],
+        updated: updatedIndex >= 0 ? values[updatedIndex] || '' : new Date().toISOString().split('T')[0],
+        taskType: taskTypeIndex >= 0 ? values[taskTypeIndex] || '' : '',
+        project: projectIndex >= 0 ? values[projectIndex] || '' : '',
+        component: componentIndex >= 0 ? values[componentIndex] || '' : ''
       });
     }
   }
@@ -203,53 +333,53 @@ function parseCSV(lines) {
   return data;
 }
 
-function parseCSVLine(line) {
-  const result = [];
-  let current = '';
-  let insideQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    
-    if (char === '"') {
-      insideQuotes = !insideQuotes;
-    } else if (char === ',' && !insideQuotes) {
-      result.push(current.trim().replace(/^"|"$/g, ''));
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  
-  result.push(current.trim().replace(/^"|"$/g, ''));
-  return result;
-}
-
 function populateMonthSelector() {
   const selector = document.getElementById('monthSelect');
   selector.innerHTML = '';
 
   const now = new Date();
-  
-  // Add last 6 months
+
+  const monthOptions = new Map();
   for (let i = 0; i < 6; i++) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const monthStr = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    
-    const option = document.createElement('option');
-    option.value = `${date.getMonth()}-${date.getFullYear()}`;
-    option.textContent = monthStr;
-    
-    if (i === 0) {
-      option.selected = true;
-    }
-    
-    selector.appendChild(option);
+    monthOptions.set(`${date.getMonth()}-${date.getFullYear()}`, date);
   }
+
+  workfrontData.forEach(task => {
+    const date = new Date(task.created);
+    if (!Number.isNaN(date.getTime())) {
+      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+      monthOptions.set(`${monthStart.getMonth()}-${monthStart.getFullYear()}`, monthStart);
+    }
+  });
+
+  const allOption = document.createElement('option');
+  allOption.value = 'all';
+  allOption.textContent = 'All Data';
+  selector.appendChild(allOption);
+
+  const sortedMonths = [...monthOptions.entries()].sort((left, right) => right[1] - left[1]);
+  sortedMonths.forEach(([value, date]) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    selector.appendChild(option);
+  });
+
+  selector.value = 'all';
+  currentMonth = null;
+  currentYear = null;
 }
 
 function changeMonth() {
   const selector = document.getElementById('monthSelect');
+  if (selector.value === 'all') {
+    currentMonth = null;
+    currentYear = null;
+    applyMonthFilter();
+    return;
+  }
+
   const [month, year] = selector.value.split('-').map(Number);
   currentMonth = month;
   currentYear = year;
@@ -261,54 +391,25 @@ function getMonthData(month, year) {
   const startDate = new Date(year, month, 1);
   const endDate = new Date(year, month + 1, 0, 23, 59, 59);
 
-  return jiraData.filter(issue => {
-    const createdDate = new Date(issue.created);
+  return workfrontData.filter(task => {
+    const createdDate = new Date(task.created);
     return createdDate >= startDate && createdDate <= endDate;
   });
-}
-
-function getPreviousMonthData(month, year) {
-  // Get last few entries from previous month
-  let prevMonth = month - 1;
-  let prevYear = year;
-
-  if (prevMonth < 0) {
-    prevMonth = 11;
-    prevYear--;
-  }
-
-  const startDate = new Date(prevYear, prevMonth, 1);
-  const endDate = new Date(prevYear, prevMonth + 1, 0, 23, 59, 59);
-
-  const prevMonthData = jiraData.filter(issue => {
-    const createdDate = new Date(issue.created);
-    return createdDate >= startDate && createdDate <= endDate;
-  });
-
-  // Return only last 5 entries from previous month
-  return prevMonthData.slice(-5);
 }
 
 function applyMonthFilter() {
-  const currentMonthData = getMonthData(currentMonth, currentYear);
-  const lastMonthData = getPreviousMonthData(currentMonth, currentYear);
+  filteredWorkfrontData = currentMonth === null
+    ? [...workfrontData]
+    : getMonthData(currentMonth, currentYear);
 
-  // Combine: last month data + current month data
-  filteredJiraData = [...lastMonthData, ...currentMonthData];
-
-  // Remove duplicates if any
-  filteredJiraData = Array.from(
-    new Map(filteredJiraData.map(item => [item.key, item])).values()
-  );
-
-  displayJiraTable();
+  displayWorkfrontTable();
   updateCharts();
   updateStatistics();
 }
 
-function filterJiraTable() {
-  const searchTerm = document.getElementById('searchJira').value.toLowerCase();
-  const rows = document.querySelectorAll('#jiraTable tbody tr');
+function filterWorkfrontTable() {
+  const searchTerm = document.getElementById('searchWorkfront').value.toLowerCase();
+  const rows = document.querySelectorAll('#workfrontTable tbody tr');
 
   rows.forEach(row => {
     const text = row.innerText.toLowerCase();
@@ -316,82 +417,98 @@ function filterJiraTable() {
   });
 }
 
-function displayJiraTable() {
-  const tbody = document.querySelector('#jiraTable tbody');
+function displayWorkfrontTable() {
+  const tbody = document.querySelector('#workfrontTable tbody');
   tbody.innerHTML = '';
 
-  if (filteredJiraData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No Jira data for selected month. Upload a CSV file to get started.</td></tr>';
+  if (filteredWorkfrontData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan=\"7\" style=\"text-align: center; padding: 20px;\">No Workfront data for selected month. Upload a CSV file to get started.</td></tr>';
     return;
   }
 
   // Sort by created date descending
-  const sorted = [...filteredJiraData].sort((a, b) => {
+  const sorted = [...filteredWorkfrontData].sort((a, b) => {
     return new Date(b.created) - new Date(a.created);
   });
 
-  sorted.forEach(issue => {
+  sorted.forEach(task => {
     const row = document.createElement('tr');
-    const statusClass = `status-${issue.status.toLowerCase().replace(/\s+/g, '-')}`;
-    
-    row.innerHTML = `
-      <td><strong>${issue.key}</strong></td>
-      <td>${issue.summary}</td>
-      <td><span class="status-badge ${statusClass}">${issue.status}</span></td>
-      <td>${issue.priority}</td>
-      <td>${issue.assignee}</td>
-      <td>${formatDate(issue.created)}</td>
-      <td>${formatDate(issue.updated)}</td>
-    `;
+    const idCell = document.createElement('td');
+    const idText = document.createElement('strong');
+    idText.textContent = task.id || '';
+    idCell.appendChild(idText);
+    row.appendChild(idCell);
+
+    [task.name, task.status, task.priority, task.assignee, formatDate(task.created), formatDate(task.updated)]
+      .forEach((value, index) => {
+        const cell = document.createElement('td');
+        if (index === 1) {
+          const badge = document.createElement('span');
+          badge.className = 'status-badge';
+          const statusClass = (value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          if (statusClass) badge.classList.add(`status-${statusClass}`);
+          badge.textContent = value || '';
+          cell.appendChild(badge);
+        } else {
+          cell.textContent = value || '';
+        }
+        row.appendChild(cell);
+      });
     tbody.appendChild(row);
   });
+
+  filterWorkfrontTable();
 }
 
 function formatDate(dateStr) {
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  } catch {
-    return dateStr;
-  }
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function updateCharts() {
-  if (filteredJiraData.length === 0) return;
+  if (filteredWorkfrontData.length === 0) {
+    [completedByTypeChart, intakesCompletedChart, progressDistributionChart, componentsDistributionChart]
+      .forEach(chart => chart?.destroy());
+    completedByTypeChart = null;
+    intakesCompletedChart = null;
+    progressDistributionChart = null;
+    componentsDistributionChart = null;
+    document.querySelectorAll('.custom-legend').forEach(legend => legend.replaceChildren());
+    return;
+  }
 
   // Group data for charts - using filtered data
   const statusCounts = {};
-  const issueTypeCounts = {};
-  const assigneeCounts = {};
+  const completedTypeCounts = {};
   const componentCounts = {};
   const progressCounts = { 'In Progress': 0, 'Completed': 0 };
 
-  filteredJiraData.forEach(issue => {
+  filteredWorkfrontData.forEach(task => {
     // Only count non-empty values
-    if (issue.status && issue.status.trim()) {
-      statusCounts[issue.status.trim()] = (statusCounts[issue.status.trim()] || 0) + 1;
+    if (task.status && task.status.trim()) {
+      statusCounts[task.status.trim()] = (statusCounts[task.status.trim()] || 0) + 1;
       
       // Group into In Progress vs Completed
-      const status = issue.status.trim().toLowerCase();
-      if (status === 'in progress' || status === 'inprogress') {
+      const status = task.status.trim().toLowerCase();
+      if (status === 'in progress' || status === 'inprogress' || status === 'current') {
         progressCounts['In Progress']++;
-      } else if (status === 'done' || status === 'closed' || status === 'resolved') {
+      } else if (status === 'done' || status === 'closed' || status === 'resolved' || status === 'complete' || status === 'completed') {
         progressCounts['Completed']++;
+        if (task.taskType && task.taskType.trim()) {
+          const taskType = task.taskType.trim();
+          completedTypeCounts[taskType] = (completedTypeCounts[taskType] || 0) + 1;
+        }
       }
     }
-    if (issue.issueType && issue.issueType.trim()) {
-      issueTypeCounts[issue.issueType.trim()] = (issueTypeCounts[issue.issueType.trim()] || 0) + 1;
-    }
-    if (issue.assignee && issue.assignee.trim()) {
-      assigneeCounts[issue.assignee.trim()] = (assigneeCounts[issue.assignee.trim()] || 0) + 1;
-    }
-    if (issue.component && issue.component.trim()) {
-      componentCounts[issue.component.trim()] = (componentCounts[issue.component.trim()] || 0) + 1;
+    if (task.component && task.component.trim()) {
+      componentCounts[task.component.trim()] = (componentCounts[task.component.trim()] || 0) + 1;
     }
   });
 
   // Create/Update Charts
-  createCompletedByTypeChart(assigneeCounts);
+  createCompletedByTypeChart(completedTypeCounts);
   createIntakesCompletedChart(statusCounts);
   createProgressDistributionChart(progressCounts);
   createComponentsDistributionChart(componentCounts);
@@ -405,6 +522,7 @@ function createCompletedByTypeChart(data) {
   }
 
   if (Object.keys(data).length === 0) {
+    createCustomLegend('completedByTypeLegend', [], [], []);
     return;
   }
 
@@ -533,6 +651,7 @@ function createProgressDistributionChart(progressData) {
   const values = labels.map(key => progressData[key]);
   
   if (labels.length === 0) {
+    createCustomLegend('progressDistributionLegend', [], [], []);
     return;
   }
 
@@ -744,46 +863,117 @@ function updateStatistics() {
   const now = new Date();
   const last30Days = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
   const yearStart = new Date(now.getFullYear(), 0, 1);
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
 
   let count30 = 0;
   let countYTD = 0;
+  let countCurrentMonth = 0;
 
-  jiraData.forEach(issue => {
-    const createdDate = new Date(issue.created);
-    
-    if (createdDate >= last30Days) {
+  workfrontData.forEach(task => {
+    const createdDate = new Date(task.created);
+
+    if (createdDate >= last30Days && createdDate < tomorrow) {
       count30++;
     }
-    
-    if (createdDate >= yearStart) {
+
+    if (createdDate >= yearStart && createdDate < tomorrow) {
       countYTD++;
+    }
+
+    if (createdDate.getFullYear() === now.getFullYear() && createdDate.getMonth() === now.getMonth()) {
+      countCurrentMonth++;
     }
   });
 
   document.getElementById('statLast30').textContent = count30;
   document.getElementById('statYTD').textContent = countYTD;
-  document.getElementById('statCurrentMonth').textContent = filteredJiraData.length;
+  document.getElementById('statCurrentMonth').textContent = countCurrentMonth;
+  updateLeadershipSummary();
 }
 
-function exportJiraData() {
-  if (filteredJiraData.length === 0) {
+function getTicketStatusCategory(status) {
+  const normalized = (status || '').trim().toLowerCase();
+  if (['done', 'closed', 'resolved', 'complete', 'completed'].includes(normalized)) return 'completed';
+  if (['in progress', 'inprogress', 'current'].includes(normalized)) return 'inProgress';
+  return 'other';
+}
+
+function updateLeadershipSummary() {
+  let completedCount = 0;
+  let inProgressCount = 0;
+  const assigneeCounts = new Map();
+
+  filteredWorkfrontData.forEach(task => {
+    const category = getTicketStatusCategory(task.status);
+    if (category === 'completed') completedCount++;
+    if (category === 'inProgress') inProgressCount++;
+
+    const assignee = task.assignee?.trim() || 'Unassigned';
+    if (!assigneeCounts.has(assignee)) {
+      assigneeCounts.set(assignee, { total: 0, completed: 0, inProgress: 0, other: 0 });
+    }
+
+    const counts = assigneeCounts.get(assignee);
+    counts.total++;
+    counts[category]++;
+  });
+
+  const totalInView = filteredWorkfrontData.length;
+  document.getElementById('summaryAllTickets').textContent = workfrontData.length;
+  document.getElementById('summaryTicketsInView').textContent = totalInView;
+  document.getElementById('summaryCompleted').textContent = completedCount;
+  document.getElementById('summaryInProgress').textContent = inProgressCount;
+  document.getElementById('summaryCompletionRate').textContent = totalInView
+    ? `${Math.round((completedCount / totalInView) * 100)}%`
+    : '0%';
+
+  const summaryBody = document.getElementById('assigneeSummaryBody');
+  summaryBody.replaceChildren();
+
+  const sortedAssignees = [...assigneeCounts.entries()].sort((left, right) =>
+    right[1].total - left[1].total || left[0].localeCompare(right[0])
+  );
+
+  if (sortedAssignees.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 5;
+    cell.textContent = 'No tickets in this view.';
+    row.appendChild(cell);
+    summaryBody.appendChild(row);
+    return;
+  }
+
+  sortedAssignees.forEach(([assignee, counts]) => {
+    const row = document.createElement('tr');
+    [assignee, counts.total, counts.completed, counts.inProgress, counts.other].forEach(value => {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.appendChild(cell);
+    });
+    summaryBody.appendChild(row);
+  });
+}
+
+function exportWorkfrontData() {
+  if (filteredWorkfrontData.length === 0) {
     alert('No data to export!');
     return;
   }
 
-  const csvData = filteredJiraData.map(issue => {
-    const values = [issue.key, issue.summary, issue.status, issue.priority, issue.assignee, issue.created, issue.updated];
+  const csvData = filteredWorkfrontData.map(task => {
+    const values = [task.id, task.name, task.status, task.priority, task.assignee, task.created, task.updated];
     return values.map(v => `"${(v || '').replace(/"/g, '""')}"`).join(',');
   });
 
-  const header = '"Issue Key","Summary","Status","Priority","Assignee","Created","Updated"';
+  const header = '"Task ID","Name","Status","Priority","Assignee","Created","Updated"';
   const csv = header + '\n' + csvData.join('\n');
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   link.setAttribute('href', url);
-  link.setAttribute('download', `jira-issues-${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute('download', `workfront-tasks-${new Date().toISOString().split('T')[0]}.csv`);
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
